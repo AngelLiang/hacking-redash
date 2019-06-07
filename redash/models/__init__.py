@@ -1,3 +1,4 @@
+#coding=utf-8
 import cStringIO
 import csv
 import datetime
@@ -707,6 +708,8 @@ class Favorite(TimestampMixin, db.Model):
 
     __tablename__ = "favorites"
     __table_args__ = (
+        # 唯一字段
+        # UniqueConstraint: A table-level UNIQUE constraint.
         UniqueConstraint("object_type", "object_id", "user_id", name="unique_favorite"),
     )
 
