@@ -68,6 +68,7 @@ scheduled_queries_executions = ScheduledQueriesExecutions()
 @python_2_unicode_compatible
 @generic_repr('id', 'name', 'type', 'org_id', 'created_at')
 class DataSource(BelongsToOrgMixin, db.Model):
+    """数据源"""
     id = Column(db.Integer, primary_key=True)
     org_id = Column(db.Integer, db.ForeignKey('organizations.id'))
     org = db.relationship(Organization, backref="data_sources")
@@ -411,13 +412,17 @@ class Query(ChangeTrackingMixin, TimestampMixin, BelongsToOrgMixin, db.Model):
     api_key = Column(db.String(40), default=lambda: generate_token(40))
     user_id = Column(db.Integer, db.ForeignKey("users.id"))
     user = db.relationship(User, foreign_keys=[user_id])
+    # 最后一次修改的用户
     last_modified_by_id = Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     last_modified_by = db.relationship(User, backref="modified_queries",
                                        foreign_keys=[last_modified_by_id])
+    # 归档
     is_archived = Column(db.Boolean, default=False, index=True)
+    # 草稿
     is_draft = Column(db.Boolean, default=True, index=True)
     schedule = Column(MutableDict.as_mutable(PseudoJSON), nullable=True)
     schedule_failures = Column(db.Integer, default=0)
+    # 可视化组件
     visualizations = db.relationship("Visualization", cascade="all, delete-orphan")
     options = Column(MutableDict.as_mutable(PseudoJSON), default={})
     search_vector = Column(TSVectorType('id', 'name', 'description', 'query',
@@ -426,6 +431,7 @@ class Query(ChangeTrackingMixin, TimestampMixin, BelongsToOrgMixin, db.Model):
                                                  'description': 'C',
                                                  'query': 'D'}),
                            nullable=True)
+    # 标签
     tags = Column('tags', MutableList.as_mutable(postgresql.ARRAY(db.Unicode)), nullable=True)
 
     query_class = SearchBaseQuery
@@ -687,11 +693,13 @@ def query_last_modified_by(target, val, oldval, initiator):
 
 @generic_repr('id', 'object_type', 'object_id', 'user_id', 'org_id')
 class Favorite(TimestampMixin, db.Model):
+    """喜欢，收藏"""
     id = Column(db.Integer, primary_key=True)
     org_id = Column(db.Integer, db.ForeignKey("organizations.id"))
 
     object_type = Column(db.Unicode(255))
     object_id = Column(db.Integer)
+    # 通用的关系函数： sqlalchemy_utils.generic_relationship
     object = generic_relationship(object_type, object_id)
 
     user_id = Column(db.Integer, db.ForeignKey("users.id"))
@@ -718,6 +726,8 @@ class Favorite(TimestampMixin, db.Model):
 
 @generic_repr('id', 'name', 'query_id', 'user_id', 'state', 'last_triggered_at', 'rearm')
 class Alert(TimestampMixin, BelongsToOrgMixin, db.Model):
+
+    # ### 状态 ###
     UNKNOWN_STATE = 'unknown'
     OK_STATE = 'ok'
     TRIGGERED_STATE = 'triggered'
@@ -806,11 +816,12 @@ class Dashboard(ChangeTrackingMixin, TimestampMixin, BelongsToOrgMixin, db.Model
     user_id = Column(db.Integer, db.ForeignKey("users.id"))
     user = db.relationship(User)
     # layout is no longer used, but kept so we know how to render old dashboards.
-    layout = Column(db.Text)
+    layout = Column(db.Text)  # 布局
     dashboard_filters_enabled = Column(db.Boolean, default=False)
-    is_archived = Column(db.Boolean, default=False, index=True)
-    is_draft = Column(db.Boolean, default=True, index=True)
-    widgets = db.relationship('Widget', backref='dashboard', lazy='dynamic')
+    is_archived = Column(db.Boolean, default=False, index=True)  # 归档
+    is_draft = Column(db.Boolean, default=True, index=True)  # 草稿
+    widgets = db.relationship('Widget', backref='dashboard', lazy='dynamic')  # 组件
+    # 标签
     tags = Column('tags', MutableList.as_mutable(postgresql.ARRAY(db.Unicode)), nullable=True)
 
     __tablename__ = 'dashboards'
@@ -846,6 +857,12 @@ class Dashboard(ChangeTrackingMixin, TimestampMixin, BelongsToOrgMixin, db.Model
 
     @classmethod
     def search(cls, org, groups_ids, user_id, search_term):
+        """
+        :param org:
+        :param groups_ids:
+        :param user_id:
+        :param search_term: 搜索关键词
+        """
         # TODO: switch to FTS
         return cls.all(org, groups_ids, user_id).filter(cls.name.ilike(u'%{}%'.format(search_term)))
 
@@ -1134,6 +1151,7 @@ class AlertSubscription(TimestampMixin, db.Model):
 
 @generic_repr('id', 'trigger', 'user_id', 'org_id')
 class QuerySnippet(TimestampMixin, db.Model, BelongsToOrgMixin):
+    """查询片段"""
     id = Column(db.Integer, primary_key=True)
     org_id = Column(db.Integer, db.ForeignKey("organizations.id"))
     org = db.relationship(Organization, backref="query_snippets")
