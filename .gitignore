@@ -7,7 +7,7 @@ venv/
 *.pyc
 .coverage
 coverage.xml
-client/dist
+# client/dist
 .DS_Store
 celerybeat-schedule*
 .#*

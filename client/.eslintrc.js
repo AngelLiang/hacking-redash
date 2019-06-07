@@ -56,5 +56,7 @@ module.exports = {
     }],
     "no-else-return": ["error", {"allowElseIf": true}],
     "object-curly-newline": ["error", {"consistent": true}],
+
+    "linebreak-style": [0 ,"error", "windows"], //允许windows开发环境
   }
 };
