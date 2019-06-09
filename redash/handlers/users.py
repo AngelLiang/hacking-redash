@@ -1,3 +1,4 @@
+# coding=utf-8
 import re
 import time
 from flask import request
@@ -30,6 +31,8 @@ order_map = {
     '-groups': '-group_ids',
 }
 
+# 偏函数partial，给 _order_results 函数设置默认值
+# 使用偏函数是因为可以根据资源的不同，使用不同的 allowed_orders 默认参数
 order_results = partial(
     _order_results,
     default_order='-created_at',
@@ -38,6 +41,7 @@ order_results = partial(
 
 
 def invite_user(org, inviter, user, send_email=True):
+    """邀请用户"""
     email_configured = settings.MAIL_DEFAULT_SENDER is not None
     d = user.to_dict()
 
@@ -51,8 +55,15 @@ def invite_user(org, inviter, user, send_email=True):
 
 
 class UserListResource(BaseResource):
+    """用户列表资源"""
     def get_users(self, disabled, pending, search_term):
+        """
+        :param disabled:
+        :param pending:
+        :param search_term:
+        """
         if disabled:
+            # 返回一个 query 给 users
             users = models.User.all_disabled(self.current_org)
         else:
             users = models.User.all(self.current_org)
@@ -62,6 +73,7 @@ class UserListResource(BaseResource):
 
         if search_term:
             users = models.User.search(users, search_term)
+            # 审计事件
             self.record_event({
                 'action': 'search',
                 'object_type': 'user',
@@ -100,10 +112,11 @@ class UserListResource(BaseResource):
 
             return d
 
+        # 搜索关键词
         search_term = request.args.get('q', '')
 
         disabled = request.args.get('disabled', 'false')  # get enabled users by default
-        disabled = parse_boolean(disabled)
+        disabled = parse_boolean(disabled)  # str -> boolean
 
         pending = request.args.get('pending', None)  # get both active and pending by default
         if pending is not None:
@@ -115,6 +128,12 @@ class UserListResource(BaseResource):
 
     @require_admin
     def post(self):
+        """创建新用户
+
+        业务逻辑：
+        前端给出帐号用户名name和邮箱email，密码由用户自己输入
+
+        """
         req = request.get_json(force=True)
         require_fields(req, ('name', 'email'))
 
@@ -123,8 +142,10 @@ class UserListResource(BaseResource):
         name, domain = req['email'].split('@', 1)
 
         if domain.lower() in blacklist or domain.lower() == 'qq.com':
+            # 居然不能使用QQ邮箱注册！太过分了！
             abort(400, message='Bad email address.')
 
+        # 创建用户数据
         user = models.User(org=self.current_org,
                            name=req['name'],
                            email=req['email'],
@@ -135,6 +156,7 @@ class UserListResource(BaseResource):
             models.db.session.add(user)
             models.db.session.commit()
         except IntegrityError as e:
+            # 居然是这样子判断邮箱帐号是否唯一？
             if "email" in e.message:
                 abort(400, message='Email already taken.')
             abort(500)
@@ -157,11 +179,13 @@ class UserInviteResource(BaseResource):
 
 
 class UserResetPasswordResource(BaseResource):
+    """用户重置密码资源"""
     @require_admin
     def post(self, user_id):
         user = models.User.get_by_id_and_org(user_id, self.current_org)
         if user.is_disabled:
             abort(404, message='Not found')
+        # 发送密码重置邮件
         reset_link = send_password_reset_email(user)
 
         return {
@@ -170,6 +194,7 @@ class UserResetPasswordResource(BaseResource):
 
 
 class UserRegenerateApiKeyResource(BaseResource):
+    """用户重新生成APIKEY资源"""
     def post(self, user_id):
         user = models.User.get_by_id_and_org(user_id, self.current_org)
         if user.is_disabled:
@@ -190,6 +215,7 @@ class UserRegenerateApiKeyResource(BaseResource):
 
 
 class UserResource(BaseResource):
+    """用户资源"""
     def get(self, user_id):
         require_permission_or_owner('list_users', user_id)
         user = get_object_or_404(models.User.get_by_id_and_org, user_id, self.current_org)

@@ -90,8 +90,15 @@ def get_object_or_404(fn, *args, **kwargs):
 
 
 def paginate(query_set, page, page_size, serializer, **kwargs):
+    """分页
+    :param query_set:
+    :param page:
+    :param page_size:
+    :param serializer: 序列化对象
+    """
     count = query_set.count()
 
+    # 验参
     if page < 1:
         abort(400, message='Page must be positive integer.')
 
@@ -125,6 +132,7 @@ def org_scoped_rule(rule):
 
 
 def json_response(response):
+    """为什么不直接使用 flask.jsonify() """
     return current_app.response_class(json_dumps(response), mimetype='application/json')
 
 
@@ -139,6 +147,11 @@ def order_results(results, default_order, allowed_orders, fallback=True):
     """
     Orders the given results with the sort order as requested in the
     "order" request query parameter or the given default order.
+
+    :param results:
+    :param default_order:
+    :param allowed_orders:
+    :param fallback:
     """
     # See if a particular order has been requested
     requested_order = request.args.get('order', '').strip()
@@ -152,6 +165,7 @@ def order_results(results, default_order, allowed_orders, fallback=True):
     selected_order = allowed_orders.get(requested_order, None)
     if selected_order is None and fallback:
         selected_order = default_order
+
     # The query may already have an ORDER BY statement attached
     # so we clear it here and apply the selected order
-    return sort_query(results.order_by(None), selected_order)
+    return sort_query(results.order_by(None), selected_order)  # sqlalchemy_utils.sort_query

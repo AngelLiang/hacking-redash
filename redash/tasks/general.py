@@ -17,6 +17,7 @@ def record_event(raw_event):
     event = models.Event.record(raw_event)
     models.db.session.commit()
 
+    # 执行事件Webhooks
     for hook in settings.EVENT_REPORTING_WEBHOOKS:
         logger.debug("Forwarding event to: %s", hook)
         try:
@@ -38,6 +39,7 @@ def version_check():
 
 @celery.task(name="redash.tasks.subscribe")
 def subscribe(form):
+    """发布"""
     logger.info("Subscribing to: [security notifications=%s], [newsletter=%s]", form['security_notifications'], form['newsletter'])
     data = {
         'admin_name': form['name'],

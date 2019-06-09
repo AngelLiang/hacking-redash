@@ -84,7 +84,7 @@ class User(TimestampMixin, db.Model, BelongsToOrgMixin, UserMixin, PermissionsCh
     org_id = Column(db.Integer, db.ForeignKey('organizations.id'))
     org = db.relationship("Organization", backref=db.backref("users", lazy="dynamic"))
     name = Column(db.String(320))
-    email = Column(EmailType)
+    email = Column(EmailType)  # sqlalchemy_utils.EmailType
     _profile_image_url = Column('profile_image_url', db.String(320), nullable=True)
     password_hash = Column(db.String(128), nullable=True)
     # 用户组
@@ -103,6 +103,7 @@ class User(TimestampMixin, db.Model, BelongsToOrgMixin, UserMixin, PermissionsCh
 
     __tablename__ = 'users'
     __table_args__ = (
+        # 索引又唯一的字段
         db.Index('users_org_id_email', 'org_id', 'email', unique=True),
     )
 

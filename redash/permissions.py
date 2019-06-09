@@ -1,3 +1,4 @@
+# coding=utf-8
 import functools
 
 from flask_login import current_user
@@ -36,6 +37,7 @@ def require_access(object_groups, user, need_view_only):
 
 
 class require_permissions(object):
+    """要求权限类装饰器"""
     def __init__(self, permissions):
         self.permissions = permissions
 

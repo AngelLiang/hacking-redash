@@ -1,3 +1,4 @@
+# coding=utf-8
 import logging
 
 from dateutil import parser
@@ -236,11 +237,12 @@ class BaseHTTPQueryRunner(BaseQueryRunner):
         # Return response and error.
         return response, error
 
-
+# 查询执行器全局字典
 query_runners = {}
 
 
 def register(query_runner_class):
+    """注册查询执行器"""
     global query_runners
     if query_runner_class.enabled():
         logger.debug("Registering %s (%s) query runner.", query_runner_class.name(), query_runner_class.type())
