@@ -1,3 +1,4 @@
+# coding=utf-8
 import logging
 import time
 
@@ -319,6 +320,7 @@ class QueryResultResource(BaseResource):
 
 
 class JobResource(BaseResource):
+    """后台任务资源"""
     def get(self, job_id):
         """
         Retrieve info about a running query job.

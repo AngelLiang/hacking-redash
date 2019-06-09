@@ -1,3 +1,4 @@
+# coding=utf-8
 import requests
 
 from celery.utils.log import get_task_logger
@@ -12,6 +13,7 @@ logger = get_task_logger(__name__)
 
 @celery.task(name="redash.tasks.record_event")
 def record_event(raw_event):
+    """事件"""
     event = models.Event.record(raw_event)
     models.db.session.commit()
 

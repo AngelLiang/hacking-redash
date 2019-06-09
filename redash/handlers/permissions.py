@@ -1,3 +1,4 @@
+# coding=utf-8
 from collections import defaultdict
 
 from redash.handlers.base import BaseResource, get_object_or_404
@@ -22,6 +23,7 @@ def get_model_from_type(type):
 
 
 class ObjectPermissionsListResource(BaseResource):
+    """对象权限列表资源"""
     def get(self, object_type, object_id):
         model = get_model_from_type(object_type)
         obj = get_object_or_404(model.get_by_id_and_org, object_id, self.current_org)
@@ -95,6 +97,7 @@ class ObjectPermissionsListResource(BaseResource):
 
 
 class CheckPermissionResource(BaseResource):
+    """检查权限资源"""
     def get(self, object_type, object_id, access_type):
         model = get_model_from_type(object_type)
         obj = get_object_or_404(model.get_by_id_and_org, object_id,

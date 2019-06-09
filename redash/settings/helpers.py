@@ -1,3 +1,4 @@
+# coding=utf-8
 import os
 
 
@@ -7,6 +8,7 @@ def fix_assets_path(path):
 
 
 def array_from_string(s):
+    """从字符串中获取队列，使用英文逗号分割"""
     array = s.split(',')
     if "" in array:
         array.remove("")

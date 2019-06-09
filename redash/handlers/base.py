@@ -1,3 +1,4 @@
+# coding=utf-8
 import time
 
 from inspect import isclass
@@ -19,6 +20,7 @@ routes = Blueprint('redash', __name__, template_folder=settings.fix_assets_path(
 
 
 class BaseResource(Resource):
+    """flask_restful.Resource"""
     decorators = [login_required]
 
     def __init__(self, *args, **kwargs):

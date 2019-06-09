@@ -1,3 +1,4 @@
+# coding=utf-8
 import hashlib
 import hmac
 import logging
@@ -140,15 +141,18 @@ def get_user_from_api_key(api_key, query_id):
 
 
 def get_api_key_from_request(request):
+    # 从 query string 中获取 token
     api_key = request.args.get('api_key', None)
 
     if api_key is not None:
         return api_key
 
     if request.headers.get('Authorization'):
+        # 从请求头 Authorization 获取 token
         auth_header = request.headers.get('Authorization')
         api_key = auth_header.replace('Key ', '', 1)
     elif request.view_args is not None and request.view_args.get('token'):
+        # 从 view_args 中获取 token
         api_key = request.view_args['token']
 
     return api_key

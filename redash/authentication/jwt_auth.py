@@ -1,3 +1,4 @@
+# coding=utf-8
 import logging
 import json
 import jwt
@@ -31,6 +32,7 @@ def get_public_keys(url):
             return data
 
 
+# 该函数对象级别的缓存
 get_public_keys.key_cache = {}
 
 

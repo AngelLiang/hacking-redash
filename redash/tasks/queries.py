@@ -1,3 +1,4 @@
+# coding=utf-8
 import logging
 import signal
 import time
@@ -95,6 +96,7 @@ class QueryTask(object):
 
 
 def enqueue_query(query, data_source, user_id, scheduled_query=None, metadata={}):
+    """查询入队"""
     query_hash = gen_query_hash(query)
     logging.info("Inserting job for %s with metadata=%s", query_hash, metadata)
     try_count = 0
@@ -140,6 +142,7 @@ def enqueue_query(query, data_source, user_id, scheduled_query=None, metadata={}
                     'user_id': user_id
                 })
 
+                # 执行查询
                 result = execute_query.apply_async(args=args,
                                                    argsrepr=argsrepr,
                                                    queue=queue_name,
@@ -185,6 +188,7 @@ def refresh_queries():
                 else:
                     query_text = query.query_text
 
+                # 查询入队
                 enqueue_query(query_text, query.data_source, query.user_id,
                               scheduled_query=query,
                               metadata={'Query ID': query.id, 'Username': 'Scheduled'})
@@ -382,6 +386,7 @@ class QueryExecutor(object):
 @celery.task(name="redash.tasks.execute_query", bind=True, track_started=True)
 def execute_query(self, query, data_source_id, metadata, user_id=None,
                   scheduled_query_id=None):
+    """执行查询"""
     if scheduled_query_id is not None:
         scheduled_query = models.Query.query.get(scheduled_query_id)
     else:
