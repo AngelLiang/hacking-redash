@@ -26,19 +26,28 @@ def get_google_auth_url(next_path):
 
 
 def render_token_login_page(template, org_slug, token, invite=True):
+    """
+    :param template:
+    :param org_slug:
+    :param token:
+    :param invite: bool, 是否是邀请
+    """
     try:
         user_id = validate_token(token)
         org = current_org._get_current_object()
         user = models.User.get_by_id_and_org(user_id, org)
     except NoResultFound:
+        # 错误的id
         logger.exception("Bad user id in token. Token= , User id= %s, Org=%s", user_id, token, org_slug)
         return render_template("error.html", error_message="Invalid invite link. Please ask for a new one."), 400
     except (SignatureExpired, BadSignature):
+        # token出错或过期
         logger.exception("Failed to verify invite token: %s, org=%s", token, org_slug)
         return render_template("error.html",
                                error_message="Your invite link has expired. Please ask for a new one."), 400
 
     if invite and user.details.get('is_invitation_pending') is False:
+        # 邀请已经结束
         return render_template("error.html",
                                error_message=("This invitation has already been accepted. "
                                               "Please try resetting your password instead.")), 400
@@ -56,11 +65,12 @@ def render_token_login_page(template, org_slug, token, invite=True):
             status_code = 400
         else:
             if invite:
-                user.is_invitation_pending = False
+                user.is_invitation_pending = False  # 正在邀请字段设为 False
             user.hash_password(request.form['password'])
             models.db.session.add(user)
             login_user(user)
             models.db.session.commit()
+            # 重定向
             return redirect(url_for('redash.index', org_slug=org_slug))
 
     google_auth_url = get_google_auth_url(url_for('redash.index', org_slug=org_slug))
@@ -77,6 +87,10 @@ def render_token_login_page(template, org_slug, token, invite=True):
 
 @routes.route(org_scoped_rule('/invite/<token>'), methods=['GET', 'POST'])
 def invite(token, org_slug=None):
+    """邀请页面
+
+    然后就是设置用户密码
+    """
     return render_token_login_page("invite.html", org_slug, token)
 
 

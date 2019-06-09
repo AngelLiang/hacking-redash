@@ -37,6 +37,7 @@
       <hr>
     {% endif %}
 
+    {# 登录表单 #}
     <form role="form" method="post" name="login">
       <input type="hidden" name="remember" value="on">
       <div class="form-group">
@@ -50,6 +51,7 @@
 
       <button type="submit" class="btn btn-primary btn-block m-t-25">Log In</button>
     </form>
+    {# 忘记密码 #}
     {% if not hide_forgot_password %}
       <div class="m-t-25">
         <a href="{{ url_for("redash.forgot_password", org_slug=org_slug) }}">I forgot my password</a>

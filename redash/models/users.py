@@ -80,7 +80,9 @@ class PermissionsCheckMixin(object):
 @python_2_unicode_compatible
 @generic_repr('id', 'name', 'email')
 class User(TimestampMixin, db.Model, BelongsToOrgMixin, UserMixin, PermissionsCheckMixin):
+    """用户帐号"""
     id = Column(db.Integer, primary_key=True)
+    # 组织
     org_id = Column(db.Integer, db.ForeignKey('organizations.id'))
     org = db.relationship("Organization", backref=db.backref("users", lazy="dynamic"))
     name = Column(db.String(320))
@@ -92,13 +94,17 @@ class User(TimestampMixin, db.Model, BelongsToOrgMixin, UserMixin, PermissionsCh
     api_key = Column(db.String(40),
                      default=lambda: generate_token(40),
                      unique=True)
-
+    # 禁用时间，如果有数据则表示禁用，为None则启用。
     disabled_at = Column(db.DateTime(True), default=None, nullable=True)
+    # 详情，使用了 postgresql.JSON 类型
     details = Column(MutableDict.as_mutable(postgresql.JSON), nullable=True,
                      server_default='{}', default={})
+    # 激活时间，存放在了 details 字段里
     active_at = json_cast_property(db.DateTime(True), 'details', 'active_at',
                                    default=None)
+    # 是否正在邀请
     is_invitation_pending = json_cast_property(db.Boolean(True), 'details', 'is_invitation_pending', default=False)
+    # 邮箱是否已经验证
     is_email_verified = json_cast_property(db.Boolean(True), 'details', 'is_email_verified', default=True)
 
     __tablename__ = 'users'
@@ -112,7 +118,7 @@ class User(TimestampMixin, db.Model, BelongsToOrgMixin, UserMixin, PermissionsCh
 
     def __init__(self, *args, **kwargs):
         if kwargs.get('email') is not None:
-            kwargs['email'] = kwargs['email'].lower()
+            kwargs['email'] = kwargs['email'].lower()  # email字段全部小写
         super(User, self).__init__(*args, **kwargs)
 
     @property
@@ -126,6 +132,7 @@ class User(TimestampMixin, db.Model, BelongsToOrgMixin, UserMixin, PermissionsCh
         self.disabled_at = None
 
     def regenerate_api_key(self):
+        """重新生成APIKEY"""
         self.api_key = generate_token(40)
 
     def to_dict(self, with_api_key=False):
@@ -191,10 +198,12 @@ class User(TimestampMixin, db.Model, BelongsToOrgMixin, UserMixin, PermissionsCh
 
     @classmethod
     def all(cls, org):
+        """所有启用用户"""
         return cls.get_by_org(org).filter(cls.disabled_at.is_(None))
 
     @classmethod
     def all_disabled(cls, org):
+        """所有禁用用户"""
         return cls.get_by_org(org).filter(cls.disabled_at.isnot(None))
 
     @classmethod
@@ -202,6 +211,8 @@ class User(TimestampMixin, db.Model, BelongsToOrgMixin, UserMixin, PermissionsCh
         """
         :param base_query:
         :param term: str, 搜索关键词
+
+        这里可以考虑使用 Flask-Whooshee 实现
         """
         term = u'%{}%'.format(term)
         search_filter = or_(cls.name.ilike(term), cls.email.like(term))
@@ -210,6 +221,10 @@ class User(TimestampMixin, db.Model, BelongsToOrgMixin, UserMixin, PermissionsCh
 
     @classmethod
     def pending(cls, base_query, pending):
+        """是否正在邀请中
+        :param base_query:
+        :param pending:
+        """
         if pending:
             return base_query.filter(cls.is_invitation_pending.is_(True))
         else:
@@ -223,6 +238,7 @@ class User(TimestampMixin, db.Model, BelongsToOrgMixin, UserMixin, PermissionsCh
         self.password_hash = pwd_context.encrypt(password)
 
     def verify_password(self, password):
+        """验证密码"""
         return self.password_hash and pwd_context.verify(password, self.password_hash)
 
     def update_group_assignments(self, group_names):

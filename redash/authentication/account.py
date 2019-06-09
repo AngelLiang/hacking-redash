@@ -13,6 +13,7 @@ serializer = URLSafeTimedSerializer(settings.COOKIE_SECRET)
 
 
 def invite_token(user):
+    """生成邀请token"""
     return serializer.dumps(str(user.id))
 
 
@@ -24,7 +25,9 @@ def verify_link_for_user(user):
 
 
 def invite_link_for_user(user):
+    """创建邀请用户的链接"""
     token = invite_token(user)
+    # redash\handlers\authentication.py:invite
     invite_url = "{}/invite/{}".format(base_url(user.org), token)
 
     return invite_url

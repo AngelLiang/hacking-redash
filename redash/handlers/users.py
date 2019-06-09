@@ -172,6 +172,7 @@ class UserListResource(BaseResource):
 
 
 class UserInviteResource(BaseResource):
+    """用户邀请资源"""
     @require_admin
     def post(self, user_id):
         user = models.User.get_by_id_and_org(user_id, self.current_org)
