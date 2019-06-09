@@ -1,3 +1,10 @@
+# coding=utf-8
+"""
+主要的类::
+
+    :class:Organization
+
+"""
 from six import python_2_unicode_compatible
 from sqlalchemy.orm.attributes import flag_modified
 from sqlalchemy_utils.models import generic_repr

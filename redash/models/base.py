@@ -1,3 +1,4 @@
+# coding=utf-8
 import functools
 
 from flask_sqlalchemy import BaseQuery, SQLAlchemy
@@ -62,6 +63,8 @@ def gfk_type(cls):
 class GFKBase(object):
     """
     Compatibility with 'generic foreign key' approach Peewee used.
+
+    通用外键基本类
     """
     object_type = Column(db.String(255))
     object_id = Column(db.Integer)
@@ -70,10 +73,12 @@ class GFKBase(object):
 
     @property
     def object(self):
+        # sqlalchemy.orm.object_session
         session = object_session(self)
         if self._object or not session:
             return self._object
         else:
+            # _gfk_types: 全局缓存
             object_class = _gfk_types[self.object_type]
             self._object = session.query(object_class).filter(
                 object_class.id == self.object_id).first()

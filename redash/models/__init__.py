@@ -917,6 +917,7 @@ class Dashboard(ChangeTrackingMixin, TimestampMixin, BelongsToOrgMixin, db.Model
 @python_2_unicode_compatible
 @generic_repr('id', 'name', 'type', 'query_id')
 class Visualization(TimestampMixin, BelongsToOrgMixin, db.Model):
+    """可视化"""
     id = Column(db.Integer, primary_key=True)
     type = Column(db.String(100))
     query_id = Column(db.Integer, db.ForeignKey("queries.id"))
@@ -947,6 +948,7 @@ class Visualization(TimestampMixin, BelongsToOrgMixin, db.Model):
 @python_2_unicode_compatible
 @generic_repr('id', 'visualization_id', 'dashboard_id')
 class Widget(TimestampMixin, BelongsToOrgMixin, db.Model):
+    """组件"""
     id = Column(db.Integer, primary_key=True)
     visualization_id = Column(db.Integer, db.ForeignKey('visualizations.id'), nullable=True)
     visualization = db.relationship(Visualization, backref=backref('widgets', cascade='delete'))
@@ -1018,6 +1020,7 @@ class ApiKey(TimestampMixin, GFKBase, db.Model):
     id = Column(db.Integer, primary_key=True)
     org_id = Column(db.Integer, db.ForeignKey("organizations.id"))
     org = db.relationship(Organization)
+    # `lambda: generate_token(40)`: 返回一个匿名函数，每次调用该函数都会再调用 generate_token(40)
     api_key = Column(db.String(255), index=True, default=lambda: generate_token(40))
     active = Column(db.Boolean, default=True)
     # 'object' provided by GFKBase

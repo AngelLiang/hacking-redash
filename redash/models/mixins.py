@@ -1,3 +1,4 @@
+# coding=utf-8
 from sqlalchemy.event import listens_for
 
 from .base import db, Column
@@ -14,7 +15,7 @@ def timestamp_before_update(mapper, connection, target):
     if hasattr(target, 'skip_updated_at'):
         return
 
-    target.updated_at = db.func.now()
+    target.updated_at = db.func.now()  # 更新 updated_at 字段
 
 
 class BelongsToOrgMixin(object):

@@ -1,3 +1,4 @@
+# coding=utf-8
 import hashlib
 import itertools
 import logging
@@ -86,6 +87,7 @@ class User(TimestampMixin, db.Model, BelongsToOrgMixin, UserMixin, PermissionsCh
     email = Column(EmailType)
     _profile_image_url = Column('profile_image_url', db.String(320), nullable=True)
     password_hash = Column(db.String(128), nullable=True)
+    # 用户组
     group_ids = Column('groups', MutableList.as_mutable(postgresql.ARRAY(db.Integer)), nullable=True)
     api_key = Column(db.String(40),
                      default=lambda: generate_token(40),
@@ -196,6 +198,10 @@ class User(TimestampMixin, db.Model, BelongsToOrgMixin, UserMixin, PermissionsCh
 
     @classmethod
     def search(cls, base_query, term):
+        """
+        :param base_query:
+        :param term: str, 搜索关键词
+        """
         term = u'%{}%'.format(term)
         search_filter = or_(cls.name.ilike(term), cls.email.like(term))
 
@@ -226,6 +232,10 @@ class User(TimestampMixin, db.Model, BelongsToOrgMixin, UserMixin, PermissionsCh
         db.session.commit()
 
     def has_access(self, obj, access_type):
+        """是否允许访问
+        :param obj: ORM模型对象
+        :param access_type: str
+        """
         return AccessPermission.exists(obj, access_type, grantee=self)
 
     def get_id(self):
@@ -238,12 +248,15 @@ class User(TimestampMixin, db.Model, BelongsToOrgMixin, UserMixin, PermissionsCh
 @python_2_unicode_compatible
 @generic_repr('id', 'name', 'type', 'org_id')
 class Group(db.Model, BelongsToOrgMixin):
+
+    # 默认权限
+    # 我个人更喜欢使用 oauth scope 的 str:str 格式
     DEFAULT_PERMISSIONS = ['create_dashboard', 'create_query', 'edit_dashboard', 'edit_query',
                            'view_query', 'view_source', 'execute_query', 'list_users', 'schedule_query',
                            'list_dashboards', 'list_alerts', 'list_data_sources']
 
-    BUILTIN_GROUP = 'builtin'
-    REGULAR_GROUP = 'regular'
+    BUILTIN_GROUP = 'builtin'  # 内建
+    REGULAR_GROUP = 'regular'  # 正式
 
     id = Column(db.Integer, primary_key=True)
     data_sources = db.relationship("DataSourceGroup", back_populates="group",
@@ -286,11 +299,14 @@ class Group(db.Model, BelongsToOrgMixin):
 
 @generic_repr('id', 'object_type', 'object_id', 'access_type', 'grantor_id', 'grantee_id')
 class AccessPermission(GFKBase, db.Model):
+    """授予权限"""
     id = Column(db.Integer, primary_key=True)
     # 'object' defined in GFKBase
     access_type = Column(db.String(255))
+    # 授予者
     grantor_id = Column(db.Integer, db.ForeignKey("users.id"))
     grantor = db.relationship(User, backref='grantor', foreign_keys=[grantor_id])
+    # 被授予者
     grantee_id = Column(db.Integer, db.ForeignKey("users.id"))
     grantee = db.relationship(User, backref='grantee', foreign_keys=[grantee_id])
 
@@ -298,6 +314,12 @@ class AccessPermission(GFKBase, db.Model):
 
     @classmethod
     def grant(cls, obj, access_type, grantee, grantor):
+        """授予
+        :param obj：ORM模型对象
+        :param access_type:
+        :param grantee: 被授予者
+        :param grantor: 授予者
+        """
         grant = cls.query.filter(cls.object_type == obj.__tablename__,
                                  cls.object_id == obj.id,
                                  cls.access_type == access_type,
@@ -316,6 +338,11 @@ class AccessPermission(GFKBase, db.Model):
 
     @classmethod
     def revoke(cls, obj, grantee, access_type=None):
+        """撤销
+        :param obj:
+        :param grantee: 被授予者
+        :param access_type:
+        """
         permissions = cls._query(obj, access_type, grantee)
         return permissions.delete()
 
@@ -329,6 +356,11 @@ class AccessPermission(GFKBase, db.Model):
 
     @classmethod
     def _query(cls, obj, access_type=None, grantee=None, grantor=None):
+        """私有方法
+        :param access_type:
+        :param grantee: 被授予者
+        :param grantor: 授予者
+        """
         q = cls.query.filter(cls.object_id == obj.id,
                              cls.object_type == obj.__tablename__)
 

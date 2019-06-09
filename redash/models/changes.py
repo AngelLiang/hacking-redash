@@ -1,3 +1,4 @@
+# coding=utf-8
 from sqlalchemy.inspection import inspect
 from sqlalchemy_utils.models import generic_repr
 
@@ -7,6 +8,7 @@ from .types import PseudoJSON
 
 @generic_repr('id', 'object_type', 'object_id', 'created_at')
 class Change(GFKBase, db.Model):
+    """修改历史记录？"""
     id = Column(db.Integer, primary_key=True)
     # 'object' defined in GFKBase
     object_version = Column(db.Integer, default=0)
