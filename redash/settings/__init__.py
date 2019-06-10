@@ -1,3 +1,4 @@
+# coding=utf-8
 import os
 from funcy import distinct, remove
 
@@ -116,10 +117,12 @@ COOKIE_SECRET = os.environ.get("REDASH_COOKIE_SECRET", "c292a0a3aa32397cdb050e23
 SESSION_COOKIE_SECURE = parse_boolean(os.environ.get("REDASH_SESSION_COOKIE_SECURE") or str(ENFORCE_HTTPS))
 SECRET_KEY = os.environ.get('REDASH_SECRET_KEY', COOKIE_SECRET)
 
+# 日志配置
 LOG_LEVEL = os.environ.get("REDASH_LOG_LEVEL", "INFO")
 LOG_STDOUT = parse_boolean(os.environ.get('REDASH_LOG_STDOUT', 'false'))
 LOG_PREFIX = os.environ.get('REDASH_LOG_PREFIX', '')
 LOG_FORMAT = os.environ.get('REDASH_LOG_FORMAT', LOG_PREFIX + '[%(asctime)s][PID:%(process)d][%(levelname)s][%(name)s] %(message)s')
+
 CELERYD_WORKER_LOG_FORMAT = os.environ.get(
     "REDASH_CELERYD_WORKER_LOG_FORMAT",
     os.environ.get('REDASH_CELERYD_LOG_FORMAT',

@@ -20,6 +20,7 @@ from .users import User, Group
 @python_2_unicode_compatible
 @generic_repr('id', 'name', 'slug')
 class Organization(TimestampMixin, db.Model):
+    """组织"""
     SETTING_GOOGLE_APPS_DOMAINS = 'google_apps_domains'
     SETTING_IS_PUBLIC = "is_public"
 
@@ -27,6 +28,7 @@ class Organization(TimestampMixin, db.Model):
     name = Column(db.String(255))
     slug = Column(db.String(255), unique=True)
     settings = Column(MutableDict.as_mutable(PseudoJSON))
+    # 用户组
     groups = db.relationship("Group", lazy="dynamic")
     events = db.relationship("Event", lazy="dynamic", order_by="desc(Event.created_at)",)
 

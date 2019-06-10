@@ -81,10 +81,13 @@ class PermissionsCheckMixin(object):
 @generic_repr('id', 'name', 'email')
 class User(TimestampMixin, db.Model, BelongsToOrgMixin, UserMixin, PermissionsCheckMixin):
     """用户帐号"""
+    # id字段可以放在父类
     id = Column(db.Integer, primary_key=True)
-    # 组织
+
+    # 组织，组织和用户是多对一关系
     org_id = Column(db.Integer, db.ForeignKey('organizations.id'))
     org = db.relationship("Organization", backref=db.backref("users", lazy="dynamic"))
+
     name = Column(db.String(320))
     email = Column(EmailType)  # sqlalchemy_utils.EmailType
     _profile_image_url = Column('profile_image_url', db.String(320), nullable=True)
@@ -102,7 +105,7 @@ class User(TimestampMixin, db.Model, BelongsToOrgMixin, UserMixin, PermissionsCh
     # 激活时间，存放在了 details 字段里
     active_at = json_cast_property(db.DateTime(True), 'details', 'active_at',
                                    default=None)
-    # 是否正在邀请
+    # 是否正在邀请等待
     is_invitation_pending = json_cast_property(db.Boolean(True), 'details', 'is_invitation_pending', default=False)
     # 邮箱是否已经验证
     is_email_verified = json_cast_property(db.Boolean(True), 'details', 'is_email_verified', default=True)
@@ -265,6 +268,7 @@ class User(TimestampMixin, db.Model, BelongsToOrgMixin, UserMixin, PermissionsCh
 @python_2_unicode_compatible
 @generic_repr('id', 'name', 'type', 'org_id')
 class Group(db.Model, BelongsToOrgMixin):
+    """用户组"""
 
     # 默认权限
     # 我个人更喜欢使用 oauth scope 的 str:str 格式
@@ -278,8 +282,10 @@ class Group(db.Model, BelongsToOrgMixin):
     id = Column(db.Integer, primary_key=True)
     data_sources = db.relationship("DataSourceGroup", back_populates="group",
                                    cascade="all")
+    # 所属组织，组织与用户组是多对一关系
     org_id = Column(db.Integer, db.ForeignKey('organizations.id'))
     org = db.relationship("Organization", back_populates="groups")
+
     type = Column(db.String(255), default=REGULAR_GROUP)
     name = Column(db.String(100))
     permissions = Column(postgresql.ARRAY(db.String(255)),

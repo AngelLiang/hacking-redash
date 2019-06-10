@@ -1,3 +1,4 @@
+# coding=utf-8
 import logging
 
 from flask import abort, flash, redirect, render_template, request, url_for

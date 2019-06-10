@@ -1,3 +1,4 @@
+# coding=utf-8
 import sys
 import logging
 import urlparse
@@ -29,6 +30,7 @@ if os.environ.get("REMOTE_DEBUG"):
 
 
 def setup_logging():
+    """配置调试器"""
     handler = logging.StreamHandler(sys.stdout if settings.LOG_STDOUT else sys.stderr)
     formatter = logging.Formatter(settings.LOG_FORMAT)
     handler.setFormatter(formatter)
