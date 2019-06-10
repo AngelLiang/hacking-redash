@@ -8,7 +8,7 @@
 - 安装Redis
 - 安装NodeJS
 - 安装Python27
-
+- 安装[Microsoft Visual C++ 9.0](`http://aka.ms/vcpython27`)
 
 ## 前端
 
@@ -130,6 +130,11 @@ pipenv install eventlet --skip-lock
 pipenv shell
 pipenv run celery -A redash.worker worker -P eventlet
 ```
+
+错误四：无法安装pycrypto
+
+到`http://aka.ms/vcpython27`下载并安装Microsoft Visual C++ 9.0。
+
 
 ## 执行测试
 
