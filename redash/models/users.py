@@ -308,7 +308,7 @@ class Group(db.Model, BelongsToOrgMixin):
 
     @classmethod
     def all(cls, org):
-        return cls.query.filter(cls.org == org)
+        return cls.query.filter(cls.org == org)  # 组织过滤
 
     @classmethod
     def members(cls, group_id):
