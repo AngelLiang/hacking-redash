@@ -128,7 +128,7 @@ pipenv install install-ext\sasl-0.2.1-cp27-cp27m-win32.whl --skip-lock
 ```PowerShell
 pipenv install eventlet --skip-lock
 pipenv shell
-pipenv run celery -A redash.worker worker -P eventlet
+celery worker -A redash.worker -P eventlet -l info -Q queries,scheduled_queries,celery,schemas --maxtasksperchild=10 -Ofair
 ```
 
 错误四：无法安装pycrypto
