@@ -97,6 +97,7 @@ def invite(token, org_slug=None):
 
 @routes.route(org_scoped_rule('/reset/<token>'), methods=['GET', 'POST'])
 def reset(token, org_slug=None):
+    """密码重置页面"""
     return render_token_login_page("reset.html", org_slug, token)
 
 
@@ -123,6 +124,7 @@ def verify(token, org_slug=None):
 
 @routes.route(org_scoped_rule('/forgot'), methods=['GET', 'POST'])
 def forgot_password(org_slug=None):
+    """忘记密码页面"""
     if not current_org.get_setting('auth_password_login_enabled'):
         abort(404)
 

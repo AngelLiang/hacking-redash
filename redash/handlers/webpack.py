@@ -1,7 +1,12 @@
+# coding=utf-8
+"""
+配置Flask webpack
+"""
 import os
 import simplejson
 from flask import url_for
 
+# asset信息文件的路径，可能是 Angular 特有
 WEBPACK_MANIFEST_PATH = os.path.join(os.path.dirname(__file__), '../../client/dist/', 'asset-manifest.json')
 
 

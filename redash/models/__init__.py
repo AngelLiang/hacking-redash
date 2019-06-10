@@ -71,6 +71,7 @@ scheduled_queries_executions = ScheduledQueriesExecutions()
 class DataSource(BelongsToOrgMixin, db.Model):
     """数据源"""
     id = Column(db.Integer, primary_key=True)
+    # 组织
     org_id = Column(db.Integer, db.ForeignKey('organizations.id'))
     org = db.relationship(Organization, backref="data_sources")
 
@@ -220,10 +221,12 @@ class DataSource(BelongsToOrgMixin, db.Model):
 
 @generic_repr('id', 'data_source_id', 'group_id', 'view_only')
 class DataSourceGroup(db.Model):
+    """数据源组"""
     # XXX drop id, use datasource/group as PK
     id = Column(db.Integer, primary_key=True)
     data_source_id = Column(db.Integer, db.ForeignKey("data_sources.id"))
     data_source = db.relationship(DataSource, back_populates="data_source_groups")
+    # 用户组
     group_id = Column(db.Integer, db.ForeignKey("groups.id"))
     group = db.relationship(Group, back_populates="data_sources")
     view_only = Column(db.Boolean, default=False)
@@ -234,7 +237,9 @@ class DataSourceGroup(db.Model):
 @python_2_unicode_compatible
 @generic_repr('id', 'org_id', 'data_source_id', 'query_hash', 'runtime', 'retrieved_at')
 class QueryResult(db.Model, BelongsToOrgMixin):
+    """查询结果"""
     id = Column(db.Integer, primary_key=True)
+    # 组织
     org_id = Column(db.Integer, db.ForeignKey('organizations.id'))
     org = db.relationship(Organization)
     data_source_id = Column(db.Integer, db.ForeignKey("data_sources.id"))
@@ -398,12 +403,16 @@ def should_schedule_next(previous_iteration, now, interval, time=None, day_of_we
               'data_source_id', 'query_hash', 'last_modified_by_id',
               'is_archived', 'is_draft', 'schedule', 'schedule_failures')
 class Query(ChangeTrackingMixin, TimestampMixin, BelongsToOrgMixin, db.Model):
+    """查询"""
     id = Column(db.Integer, primary_key=True)
     version = Column(db.Integer, default=1)
+    # 组织
     org_id = Column(db.Integer, db.ForeignKey('organizations.id'))
     org = db.relationship(Organization, backref="queries")
+    # 数据源
     data_source_id = Column(db.Integer, db.ForeignKey("data_sources.id"), nullable=True)
     data_source = db.relationship(DataSource, backref='queries')
+    # 最后一次查询结果
     latest_query_data_id = Column(db.Integer, db.ForeignKey("query_results.id"), nullable=True)
     latest_query_data = db.relationship(QueryResult)
     name = Column(db.String(255))
@@ -810,10 +819,13 @@ def generate_slug(ctx):
 @gfk_type
 @generic_repr('id', 'name', 'slug', 'user_id', 'org_id', 'version', 'is_archived', 'is_draft')
 class Dashboard(ChangeTrackingMixin, TimestampMixin, BelongsToOrgMixin, db.Model):
+    """主控板"""
     id = Column(db.Integer, primary_key=True)
     version = Column(db.Integer)
+    # 组织
     org_id = Column(db.Integer, db.ForeignKey("organizations.id"))
     org = db.relationship(Organization, backref="dashboards")
+
     slug = Column(db.String(140), index=True, default=generate_slug)
     name = Column(db.String(100))
     user_id = Column(db.Integer, db.ForeignKey("users.id"))
@@ -821,8 +833,10 @@ class Dashboard(ChangeTrackingMixin, TimestampMixin, BelongsToOrgMixin, db.Model
     # layout is no longer used, but kept so we know how to render old dashboards.
     layout = Column(db.Text)  # 布局
     dashboard_filters_enabled = Column(db.Boolean, default=False)
-    is_archived = Column(db.Boolean, default=False, index=True)  # 归档
-    is_draft = Column(db.Boolean, default=True, index=True)  # 草稿
+    # 归档
+    is_archived = Column(db.Boolean, default=False, index=True)
+    # 草稿
+    is_draft = Column(db.Boolean, default=True, index=True)
     widgets = db.relationship('Widget', backref='dashboard', lazy='dynamic')  # 组件
     # 标签
     tags = Column('tags', MutableList.as_mutable(postgresql.ARRAY(db.Unicode)), nullable=True)
