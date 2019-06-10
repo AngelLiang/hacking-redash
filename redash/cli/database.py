@@ -1,3 +1,4 @@
+# coding=utf-8
 import time
 
 import sqlalchemy
@@ -9,6 +10,7 @@ manager = AppGroup(help="Manage the database (create/drop tables).")
 
 
 def _wait_for_db_connection(db):
+    """等待数据库链接"""
     retried = False
     while not retried:
         try:

@@ -1,3 +1,4 @@
+# coding=utf-8
 from passlib.apps import custom_app_context as pwd_context
 import redash.models
 from redash.models import db
@@ -7,6 +8,7 @@ from redash.utils.configuration import ConfigurationContainer
 
 
 class ModelFactory(object):
+    """模型工厂类"""
     def __init__(self, model, **kwargs):
         self.model = model
         self.kwargs = kwargs

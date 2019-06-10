@@ -39,6 +39,7 @@ class Change(GFKBase, db.Model):
 
     @classmethod
     def last_change(cls, obj):
+        """最后一次修改"""
         return cls.query.filter(
             cls.object_id == obj.id,
             cls.object_type == obj.__class__.__tablename__

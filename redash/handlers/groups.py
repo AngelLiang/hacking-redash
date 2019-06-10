@@ -1,3 +1,4 @@
+# coding=utf-8
 import time
 from flask import request
 from flask_restful import abort
@@ -7,6 +8,7 @@ from redash.handlers.base import BaseResource, get_object_or_404
 
 
 class GroupListResource(BaseResource):
+    """用户组列表资源"""
     @require_admin
     def post(self):
         name = request.json['name']
@@ -39,6 +41,7 @@ class GroupListResource(BaseResource):
 
 
 class GroupResource(BaseResource):
+    """用户组资源"""
     @require_admin
     def post(self, group_id):
         group = models.Group.get_by_id_and_org(group_id, self.current_org)
@@ -87,6 +90,7 @@ class GroupResource(BaseResource):
 
 
 class GroupMemberListResource(BaseResource):
+    """用户组成员列表资源"""
     @require_admin
     def post(self, group_id):
         user_id = request.json['user_id']
@@ -113,6 +117,7 @@ class GroupMemberListResource(BaseResource):
 
 
 class GroupMemberResource(BaseResource):
+    """用户组成员资源"""
     @require_admin
     def delete(self, group_id, user_id):
         user = models.User.get_by_id_and_org(user_id, self.current_org)
@@ -128,12 +133,14 @@ class GroupMemberResource(BaseResource):
 
 
 def serialize_data_source_with_group(data_source, data_source_group):
+    """序列化"""
     d = data_source.to_dict()
     d['view_only'] = data_source_group.view_only
     return d
 
 
 class GroupDataSourceListResource(BaseResource):
+    """用户组数据源列表资源"""
     @require_admin
     def post(self, group_id):
         data_source_id = request.json['data_source_id']
@@ -172,6 +179,7 @@ class GroupDataSourceListResource(BaseResource):
 
 
 class GroupDataSourceResource(BaseResource):
+    """用户组数据源资源"""
     @require_admin
     def post(self, group_id, data_source_id):
         data_source = models.DataSource.get_by_id_and_org(data_source_id, self.current_org)

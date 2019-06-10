@@ -129,9 +129,11 @@ class User(TimestampMixin, db.Model, BelongsToOrgMixin, UserMixin, PermissionsCh
         return self.disabled_at is not None
 
     def disable(self):
+        """禁用"""
         self.disabled_at = db.func.now()
 
     def enable(self):
+        """使能"""
         self.disabled_at = None
 
     def regenerate_api_key(self):
@@ -211,7 +213,7 @@ class User(TimestampMixin, db.Model, BelongsToOrgMixin, UserMixin, PermissionsCh
 
     @classmethod
     def search(cls, base_query, term):
-        """
+        """搜索用户名或邮箱
         :param base_query:
         :param term: str, 搜索关键词
 
@@ -225,6 +227,7 @@ class User(TimestampMixin, db.Model, BelongsToOrgMixin, UserMixin, PermissionsCh
     @classmethod
     def pending(cls, base_query, pending):
         """是否正在邀请中
+
         :param base_query:
         :param pending:
         """
@@ -268,7 +271,10 @@ class User(TimestampMixin, db.Model, BelongsToOrgMixin, UserMixin, PermissionsCh
 @python_2_unicode_compatible
 @generic_repr('id', 'name', 'type', 'org_id')
 class Group(db.Model, BelongsToOrgMixin):
-    """用户组"""
+    """用户组
+
+    这里是使用了用户组替代了角色？
+    """
 
     # 默认权限
     # 我个人更喜欢使用 oauth scope 的 str:str 格式
@@ -280,16 +286,21 @@ class Group(db.Model, BelongsToOrgMixin):
     REGULAR_GROUP = 'regular'  # 正式
 
     id = Column(db.Integer, primary_key=True)
+    # 数据源组
     data_sources = db.relationship("DataSourceGroup", back_populates="group",
                                    cascade="all")
     # 所属组织，组织与用户组是多对一关系
     org_id = Column(db.Integer, db.ForeignKey('organizations.id'))
     org = db.relationship("Organization", back_populates="groups")
 
+    # 用户组类型
     type = Column(db.String(255), default=REGULAR_GROUP)
+    # 用户组名称
     name = Column(db.String(100))
+    # 该用户组的权限，没有使用多对多表，而是使用了数组
     permissions = Column(postgresql.ARRAY(db.String(255)),
                          default=DEFAULT_PERMISSIONS)
+    # 创建时间
     created_at = Column(db.DateTime(True), default=db.func.now())
 
     __tablename__ = 'groups'
@@ -308,7 +319,7 @@ class Group(db.Model, BelongsToOrgMixin):
 
     @classmethod
     def all(cls, org):
-        return cls.query.filter(cls.org == org)
+        return cls.query.filter(cls.org == org)  # 组织过滤
 
     @classmethod
     def members(cls, group_id):
@@ -337,7 +348,7 @@ class AccessPermission(GFKBase, db.Model):
 
     @classmethod
     def grant(cls, obj, access_type, grantee, grantor):
-        """授予
+        """授予权限
         :param obj：ORM模型对象
         :param access_type:
         :param grantee: 被授予者

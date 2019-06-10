@@ -1,3 +1,4 @@
+# coding=utf-8
 import codecs
 import cStringIO
 import csv
@@ -62,6 +63,7 @@ def gen_query_hash(sql):
 
 
 def generate_token(length):
+    """生成token"""
     chars = ('abcdefghijklmnopqrstuvwxyz'
              'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
              '0123456789')

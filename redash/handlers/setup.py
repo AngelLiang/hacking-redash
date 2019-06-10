@@ -1,3 +1,4 @@
+# coding=utf-8
 from flask import g, redirect, render_template, request, url_for
 
 from flask_login import login_user
@@ -11,6 +12,7 @@ from wtforms.fields.html5 import EmailField
 
 
 class SetupForm(Form):
+    """配置表单"""
     name = StringField('Name', validators=[validators.InputRequired()])
     email = EmailField('Email Address', validators=[validators.Email()])
     password = PasswordField('Password', validators=[validators.Length(6)])
@@ -20,8 +22,13 @@ class SetupForm(Form):
 
 
 def create_org(org_name, user_name, email, password):
+    """创建组织、用户组和初始用户"""
+
+    # 默认组织
     default_org = Organization(name=org_name, slug='default', settings={})
+    # 管理员用户组
     admin_group = Group(name='admin', permissions=['admin', 'super_admin'], org=default_org, type=Group.BUILTIN_GROUP)
+    # 默认用户组
     default_group = Group(name='default', permissions=Group.DEFAULT_PERMISSIONS, org=default_org, type=Group.BUILTIN_GROUP)
 
     db.session.add_all([default_org, admin_group, default_group])
@@ -41,6 +48,7 @@ def create_org(org_name, user_name, email, password):
 
 @routes.route('/setup', methods=['GET', 'POST'])
 def setup():
+    """配置页面"""
     if current_org != None or settings.MULTI_ORG:
         return redirect('/')
 
@@ -59,5 +67,5 @@ def setup():
             subscribe.delay(form.data)
 
         return redirect(url_for('redash.index', org_slug=None))
-
+    # GET
     return render_template('setup.html', form=form)
