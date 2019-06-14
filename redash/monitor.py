@@ -9,11 +9,13 @@ from redash.worker import celery
 
 
 def get_redis_status():
+    """redis状态"""
     info = redis_connection.info()
     return {'redis_used_memory': info['used_memory'], 'redis_used_memory_human': info['used_memory_human']}
 
 
 def get_object_counts():
+    """统计数据表总数"""
     status = {}
     status['queries_count'] = Query.query.count()
     if settings.FEATURE_SHOW_QUERY_RESULTS_COUNT:
@@ -25,6 +27,7 @@ def get_object_counts():
 
 
 def get_queues():
+    """获取队列"""
     queue_names = db.session.query(DataSource.queue_name).distinct()
     scheduled_queue_names = db.session.query(DataSource.scheduled_queue_name).distinct()
     query = db.session.execute(union_all(queue_names, scheduled_queue_names))
@@ -33,6 +36,7 @@ def get_queues():
 
 
 def get_queues_status():
+    """获取队列状态"""
     queues = {}
 
     for queue in get_queues():
@@ -44,6 +48,7 @@ def get_queues_status():
 
 
 def get_db_sizes():
+    """获取数据库容量"""
     database_metrics = []
     queries = [
         ['Query Results Size', "select pg_total_relation_size('query_results') as size from (select 1) as a"],
@@ -57,6 +62,7 @@ def get_db_sizes():
 
 
 def get_status():
+    """获取状态"""
     status = {
         'version': __version__,
         'workers': []
@@ -72,6 +78,7 @@ def get_status():
 
 
 def get_waiting_in_queue(queue_name):
+    """获取队列等待中的队列"""
     jobs = []
     for raw in redis_connection.lrange(queue_name, 0, -1):
         job = json.loads(raw)

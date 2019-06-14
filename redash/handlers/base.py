@@ -41,6 +41,7 @@ class BaseResource(Resource):
         return current_org._get_current_object()
 
     def record_event(self, options):
+        """创建事件"""
         record_event(self.current_org, self.current_user, options)
 
     # TODO: this should probably be somewhere else
@@ -50,6 +51,12 @@ class BaseResource(Resource):
 
 
 def record_event(org, user, options):
+    """创建事件历史记录？
+
+    :param org: 组织
+    :param user: 用户
+    :param options: 额外的参数
+    """
     if user.is_api_user():
         options.update({
             'api_key': user.name,

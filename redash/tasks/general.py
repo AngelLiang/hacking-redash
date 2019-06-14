@@ -13,7 +13,7 @@ logger = get_task_logger(__name__)
 
 @celery.task(name="redash.tasks.record_event")
 def record_event(raw_event):
-    """事件"""
+    """创建事件任务"""
     event = models.Event.record(raw_event)
     models.db.session.commit()
 

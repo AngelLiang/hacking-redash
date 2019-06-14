@@ -1014,6 +1014,12 @@ class Event(db.Model):
     object_type = Column(db.String(255))
     object_id = Column(db.String(255), nullable=True)
 
+    # 额外的属性，根据传入的参数，可能会有以下key
+    # org_id: 组织id
+    # ip: 客户端ip
+    # user_agent: 客户端信息
+    # user_name: 用户name
+    # api_key: 用户name
     additional_properties = Column(MutableDict.as_mutable(PseudoJSON), nullable=True, default={})
     created_at = Column(db.DateTime(True), default=db.func.now())
 
@@ -1035,13 +1041,14 @@ class Event(db.Model):
 
     @classmethod
     def record(cls, event):
-        """创建数据"""
+        """创建事件数据"""
         org_id = event.pop('org_id')
         user_id = event.pop('user_id', None)
         action = event.pop('action')
         object_type = event.pop('object_type')
         object_id = event.pop('object_id', None)
 
+        # 转UTC
         created_at = datetime.datetime.utcfromtimestamp(event.pop('timestamp'))
 
         event = cls(org_id=org_id, user_id=user_id, action=action,
