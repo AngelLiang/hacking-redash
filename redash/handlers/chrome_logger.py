@@ -1,10 +1,13 @@
+# coding=utf-8
 import time
+# chromelogger: Python library for logging data to Google Chrome console.
 import chromelogger
 from flask import g, request
 from flask_sqlalchemy import get_debug_queries
 
 
 def log_queries():
+    """查询日志"""
     total_duration = 0.0
     queries_count = 0
 
@@ -30,7 +33,7 @@ def chrome_log(response):
         request.method, request.path, response.status_code, request_duration, queries_count, queries_duration)
 
     chromelogger.group_collapsed(group_name)
-    
+
     endpoint = (request.endpoint or 'unknown').replace('.', '_')
     chromelogger.info('Endpoint: {}'.format(endpoint))
     chromelogger.info('Content Type: {}'.format(response.content_type))
@@ -40,6 +43,7 @@ def chrome_log(response):
 
     chromelogger.group_end(group_name)
 
+    # 添加到响应头部
     header = chromelogger.get_header()
     if header is not None:
         response.headers.add(*header)

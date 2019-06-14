@@ -98,6 +98,7 @@ def get_object_or_404(fn, *args, **kwargs):
 
 def paginate(query_set, page, page_size, serializer, **kwargs):
     """分页
+
     :param query_set:
     :param page:
     :param page_size:

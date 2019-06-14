@@ -214,6 +214,7 @@ class User(TimestampMixin, db.Model, BelongsToOrgMixin, UserMixin, PermissionsCh
     @classmethod
     def search(cls, base_query, term):
         """搜索用户名或邮箱
+
         :param base_query:
         :param term: str, 搜索关键词
 
@@ -256,6 +257,7 @@ class User(TimestampMixin, db.Model, BelongsToOrgMixin, UserMixin, PermissionsCh
 
     def has_access(self, obj, access_type):
         """是否允许访问
+
         :param obj: ORM模型对象
         :param access_type: str
         """
@@ -390,7 +392,8 @@ class AccessPermission(GFKBase, db.Model):
 
     @classmethod
     def _query(cls, obj, access_type=None, grantee=None, grantor=None):
-        """私有方法
+        """查询，私有方法
+
         :param access_type:
         :param grantee: 被授予者
         :param grantor: 授予者
