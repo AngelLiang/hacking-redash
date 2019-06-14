@@ -77,6 +77,7 @@ class ChangeTrackingMixin(object):
         super(ChangeTrackingMixin, self).__setattr__(key, value)
 
     def record_changes(self, changed_by):
+        """创建修改记录"""
         db.session.add(self)
         db.session.flush()
         changes = {}

@@ -156,10 +156,12 @@ def order_results(results, default_order, allowed_orders, fallback=True):
     Orders the given results with the sort order as requested in the
     "order" request query parameter or the given default order.
 
-    :param results:
-    :param default_order:
-    :param allowed_orders:
-    :param fallback:
+    结果排序
+
+    :param results: query
+    :param default_order: str, 默认排序的字段
+    :param allowed_orders: dict, 允许排序的字段字典
+    :param fallback: boolean, 撤退
     """
     # See if a particular order has been requested
     requested_order = request.args.get('order', '').strip()

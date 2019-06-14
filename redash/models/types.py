@@ -1,3 +1,4 @@
+# coding=utf-8
 import pytz
 from sqlalchemy.types import TypeDecorator
 from sqlalchemy.ext.indexable import index_property
@@ -30,6 +31,12 @@ class EncryptedConfiguration(EncryptedType):
 
 # XXX replace PseudoJSON and MutableDict with real JSON field
 class PseudoJSON(TypeDecorator):
+    """
+    Usage::
+
+        options = Column(MutableDict.as_mutable(PseudoJSON))
+
+    """
     impl = db.Text
 
     def process_bind_param(self, value, dialect):
@@ -45,6 +52,12 @@ class PseudoJSON(TypeDecorator):
 
 
 class MutableDict(Mutable, dict):
+    """
+    Usage::
+
+        options = Column(MutableDict.as_mutable(PseudoJSON), default={})
+
+    """
     @classmethod
     def coerce(cls, key, value):
         "Convert plain dictionaries to MutableDict."
@@ -72,6 +85,12 @@ class MutableDict(Mutable, dict):
 
 
 class MutableList(Mutable, list):
+    """
+    Usage::
+
+        tags = Column('tags', MutableList.as_mutable(postgresql.ARRAY(db.Unicode)), nullable=True)
+
+    """
     def append(self, value):
         list.append(self, value)
         self.changed()

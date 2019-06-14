@@ -1002,14 +1002,29 @@ class Widget(TimestampMixin, BelongsToOrgMixin, db.Model):
 class Event(db.Model):
     """事件"""
     id = Column(db.Integer, primary_key=True)
+
     # 组织
     org_id = Column(db.Integer, db.ForeignKey("organizations.id"))
     org = db.relationship(Organization, back_populates="events")
+
     # 用户
     user_id = Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
     user = db.relationship(User, backref="events")
+
     # 操作
+    # 可能的字符串：
+    # - list、view、edit、create、delete、fork、search
+    # - subscribe、unsubscribe
+    # - search、archive
+    # - activate_api_key、deactivate_api_key
+    # - load_favorites
+    # - pause、resume、test
+    # - favorite、unfavorite
+    # - add_member、remove_member
+    # - add_data_source、remove_data_source、change_data_source_permission
+    # - grant_permission、revoke_permission
     action = Column(db.String(255))
+
     # 操作的数据表
     object_type = Column(db.String(255))
     object_id = Column(db.String(255), nullable=True)
