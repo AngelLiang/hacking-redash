@@ -76,13 +76,17 @@ class DataSource(BelongsToOrgMixin, db.Model):
     org_id = Column(db.Integer, db.ForeignKey('organizations.id'))
     org = db.relationship(Organization, backref="data_sources")
 
+    # 数据库名称
     name = Column(db.String(255))
+    # 数据库类型，比如数据源是 postgreSQL ，则会存储 pg
     type = Column(db.String(255))
+    # 加密的options，用于数据库URL后面的的options配置？
     options = Column('encrypted_options', ConfigurationContainer.as_mutable(EncryptedConfiguration(db.Text, settings.SECRET_KEY, FernetEngine)))
     # 队列名称，默认是 queries
     queue_name = Column(db.String(255), default="queries")
     # 定时查询名称，默认是 scheduled_queries
     scheduled_queue_name = Column(db.String(255), default="scheduled_queries")
+    # 创建时间
     created_at = Column(db.DateTime(True), default=db.func.now())
 
     # 数据源组
