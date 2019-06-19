@@ -99,6 +99,10 @@ class DataSource(BelongsToOrgMixin, db.Model):
         return self.id == other.id
 
     def to_dict(self, all=False, with_permissions_for=None):
+        """
+        :param all: bool, 全部字段
+        :param with_permissions_for: 附带权限数据
+        """
         d = {
             'id': self.id,
             'name': self.name,
@@ -137,6 +141,7 @@ class DataSource(BelongsToOrgMixin, db.Model):
 
     @classmethod
     def all(cls, org, group_ids=None):
+        # org过滤，id正排序
         data_sources = cls.query.filter(cls.org == org).order_by(cls.id.asc())
 
         if group_ids:
