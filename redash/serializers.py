@@ -1,7 +1,10 @@
+# coding=utf-8
 """
 This will eventually replace all the `to_dict` methods of the different model
 classes we have. This will ensure cleaner code and better
 separation of concerns.
+
+这里将最终替代所有不同的模型类的 `to_dict` 方法。这将确保代码整洁并更好的分离关注。
 """
 from funcy import project
 
@@ -60,6 +63,7 @@ def public_dashboard(dashboard):
 
 
 class Serializer(object):
+    """序列化对象"""
     pass
 
 
@@ -164,6 +168,7 @@ def serialize_widget(object):
 
 
 def serialize_alert(alert, full=True):
+    """alert序列化"""
     d = {
         'id': alert.id,
         'name': alert.name,

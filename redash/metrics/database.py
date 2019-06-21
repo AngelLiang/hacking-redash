@@ -1,3 +1,5 @@
+# coding=utf-8
+"""数据库度量模块"""
 import logging
 import time
 
@@ -31,7 +33,7 @@ def before_execute(conn, elt, multiparams, params):
 
 @listens_for(Engine, "after_execute")
 def after_execute(conn, elt, multiparams, params, result):
-    duration = 1000 * (time.time() - conn.info['query_start_time'].pop(-1))
+    duration = 1000 * (time.time() - conn.info['query_start_time'].pop(-1))  # 单位ms
     action = elt.__class__.__name__
 
     if action == 'Select':
@@ -53,8 +55,12 @@ def after_execute(conn, elt, multiparams, params, result):
                          duration)
 
     if has_request_context():
+        # 有请求上下文
+
+        # 挂接 queries_duration 和 queries_duration 等参数
         g.setdefault('queries_count', 0)
         g.setdefault('queries_duration', 0)
+        # 累加 查询次数 和 查询用时
         g.queries_count += 1
         g.queries_duration += duration
 

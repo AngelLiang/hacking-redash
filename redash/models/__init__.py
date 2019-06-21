@@ -24,6 +24,7 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import FernetEngine
 from redash import redis_connection, utils, settings
 from redash.destinations import (get_configuration_schema_for_destination_type,
                                  get_destination)
+# 导入 redash.metrics.database 模块，初始化相关
 from redash.metrics import database  # noqa: F401
 from redash.query_runner import (get_configuration_schema_for_query_runner_type,
                                  get_query_runner)

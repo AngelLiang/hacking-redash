@@ -75,7 +75,9 @@ redis_connection = create_redis_connection()
 mail = Mail()
 migrate = Migrate()
 mail.init_mail(settings.all_settings())
+# 统计客户端
 statsd_client = StatsClient(host=settings.STATSD_HOST, port=settings.STATSD_PORT, prefix=settings.STATSD_PREFIX)
+# 限制器
 limiter = Limiter(key_func=get_ipaddr, storage_uri=settings.LIMITER_STORAGE)
 
 import_query_runners(settings.QUERY_RUNNERS)
@@ -125,7 +127,7 @@ def create_app():
     app.config['SQLALCHEMY_DATABASE_URI'] = settings.SQLALCHEMY_DATABASE_URI
     app.config.update(settings.all_settings())
 
-    provision_app(app)
+    provision_app(app)  # 注册请求前和请求后处理函数
     db.init_app(app)
     migrate.init_app(app, db)
     mail.init_app(app)

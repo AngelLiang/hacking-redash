@@ -20,6 +20,7 @@ def all_settings():
 REDIS_URL = os.environ.get('REDASH_REDIS_URL', os.environ.get('REDIS_URL', "redis://localhost:6379/0"))
 PROXIES_COUNT = int(os.environ.get('REDASH_PROXIES_COUNT', "1"))
 
+# STATSD
 STATSD_HOST = os.environ.get('REDASH_STATSD_HOST', "127.0.0.1")
 STATSD_PORT = int(os.environ.get('REDASH_STATSD_PORT', "8125"))
 STATSD_PREFIX = os.environ.get('REDASH_STATSD_PREFIX', "redash")
@@ -123,6 +124,7 @@ LOG_STDOUT = parse_boolean(os.environ.get('REDASH_LOG_STDOUT', 'false'))
 LOG_PREFIX = os.environ.get('REDASH_LOG_PREFIX', '')
 LOG_FORMAT = os.environ.get('REDASH_LOG_FORMAT', LOG_PREFIX + '[%(asctime)s][PID:%(process)d][%(levelname)s][%(name)s] %(message)s')
 
+# CELERY
 CELERYD_WORKER_LOG_FORMAT = os.environ.get(
     "REDASH_CELERYD_WORKER_LOG_FORMAT",
     os.environ.get('REDASH_CELERYD_LOG_FORMAT',
