@@ -1,4 +1,4 @@
-#coding=utf-8
+# coding=utf-8
 import cStringIO
 import csv
 import datetime
@@ -42,6 +42,7 @@ logger = logging.getLogger(__name__)
 
 
 class ScheduledQueriesExecutions(object):
+    """定时查询执行器"""
     KEY_NAME = 'sq:executed_at'
 
     def __init__(self):
@@ -78,10 +79,13 @@ class DataSource(BelongsToOrgMixin, db.Model):
     name = Column(db.String(255))
     type = Column(db.String(255))
     options = Column('encrypted_options', ConfigurationContainer.as_mutable(EncryptedConfiguration(db.Text, settings.SECRET_KEY, FernetEngine)))
+    # 队列名称，默认是 queries
     queue_name = Column(db.String(255), default="queries")
+    # 定时查询名称，默认是 scheduled_queries
     scheduled_queue_name = Column(db.String(255), default="scheduled_queries")
     created_at = Column(db.DateTime(True), default=db.func.now())
 
+    # 数据源组
     data_source_groups = db.relationship("DataSourceGroup", back_populates="data_source",
                                          cascade="all")
     __tablename__ = 'data_sources'
@@ -221,9 +225,10 @@ class DataSource(BelongsToOrgMixin, db.Model):
 
 @generic_repr('id', 'data_source_id', 'group_id', 'view_only')
 class DataSourceGroup(db.Model):
-    """数据源组"""
+    """数据源组，本质是数据源和用户组的关联表"""
     # XXX drop id, use datasource/group as PK
     id = Column(db.Integer, primary_key=True)
+    # 数据源
     data_source_id = Column(db.Integer, db.ForeignKey("data_sources.id"))
     data_source = db.relationship(DataSource, back_populates="data_source_groups")
     # 用户组
@@ -242,11 +247,16 @@ class QueryResult(db.Model, BelongsToOrgMixin):
     # 组织
     org_id = Column(db.Integer, db.ForeignKey('organizations.id'))
     org = db.relationship(Organization)
+
+    # 数据源
     data_source_id = Column(db.Integer, db.ForeignKey("data_sources.id"))
     data_source = db.relationship(DataSource, backref=backref('query_results'))
+
     query_hash = Column(db.String(32), index=True)
     query_text = Column('query', db.Text)
     data = Column(db.Text)
+
+    # 执行时间
     runtime = Column(postgresql.DOUBLE_PRECISION)
     retrieved_at = Column(db.DateTime(True))
 
@@ -330,6 +340,7 @@ class QueryResult(db.Model, BelongsToOrgMixin):
         return self.data_source.groups
 
     def make_csv_content(self):
+        """生成csv内容"""
         s = cStringIO.StringIO()
 
         query_data = json_loads(self.data)
@@ -342,6 +353,7 @@ class QueryResult(db.Model, BelongsToOrgMixin):
         return s.getvalue()
 
     def make_excel_content(self):
+        """生成excel内容"""
         s = cStringIO.StringIO()
 
         query_data = json_loads(self.data)
@@ -420,6 +432,7 @@ class Query(ChangeTrackingMixin, TimestampMixin, BelongsToOrgMixin, db.Model):
     query_text = Column("query", db.Text)
     query_hash = Column(db.String(32))
     api_key = Column(db.String(40), default=lambda: generate_token(40))
+    # 用户
     user_id = Column(db.Integer, db.ForeignKey("users.id"))
     user = db.relationship(User, foreign_keys=[user_id])
     # 最后一次修改的用户
@@ -820,6 +833,10 @@ def generate_slug(ctx):
 @generic_repr('id', 'name', 'slug', 'user_id', 'org_id', 'version', 'is_archived', 'is_draft')
 class Dashboard(ChangeTrackingMixin, TimestampMixin, BelongsToOrgMixin, db.Model):
     """主控板"""
+<<<<<<< HEAD
+=======
+
+>>>>>>> f44e9a28bfda0ecba2d08f67fe69f7a326bb9a53
     id = Column(db.Integer, primary_key=True)
     version = Column(db.Integer)
     # 组织
@@ -828,6 +845,7 @@ class Dashboard(ChangeTrackingMixin, TimestampMixin, BelongsToOrgMixin, db.Model
 
     slug = Column(db.String(140), index=True, default=generate_slug)
     name = Column(db.String(100))
+    # 用户
     user_id = Column(db.Integer, db.ForeignKey("users.id"))
     user = db.relationship(User)
     # layout is no longer used, but kept so we know how to render old dashboards.
@@ -901,6 +919,7 @@ class Dashboard(ChangeTrackingMixin, TimestampMixin, BelongsToOrgMixin, db.Model
 
     @classmethod
     def favorites(cls, user, base_query=None):
+        """喜欢收藏"""
         if base_query is None:
             base_query = cls.all(user.org, user.group_ids, user.id)
         return base_query.join(
@@ -984,14 +1003,41 @@ class Widget(TimestampMixin, BelongsToOrgMixin, db.Model):
 @python_2_unicode_compatible
 @generic_repr('id', 'object_type', 'object_id', 'action', 'user_id', 'org_id', 'created_at')
 class Event(db.Model):
+    """事件"""
     id = Column(db.Integer, primary_key=True)
+
+    # 组织
     org_id = Column(db.Integer, db.ForeignKey("organizations.id"))
     org = db.relationship(Organization, back_populates="events")
+
+    # 用户
     user_id = Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
     user = db.relationship(User, backref="events")
+
+    # 操作
+    # 可能的字符串：
+    # - list、view、edit、create、delete、fork、search
+    # - subscribe、unsubscribe
+    # - search、archive
+    # - activate_api_key、deactivate_api_key
+    # - load_favorites
+    # - pause、resume、test
+    # - favorite、unfavorite
+    # - add_member、remove_member
+    # - add_data_source、remove_data_source、change_data_source_permission
+    # - grant_permission、revoke_permission
     action = Column(db.String(255))
+
+    # 操作的数据表
     object_type = Column(db.String(255))
     object_id = Column(db.String(255), nullable=True)
+
+    # 额外的属性，根据传入的参数，可能会有以下key
+    # org_id: 组织id
+    # ip: 客户端ip
+    # user_agent: 客户端信息
+    # user_name: 用户name
+    # api_key: 用户name
     additional_properties = Column(MutableDict.as_mutable(PseudoJSON), nullable=True, default={})
     created_at = Column(db.DateTime(True), default=db.func.now())
 
@@ -1013,12 +1059,14 @@ class Event(db.Model):
 
     @classmethod
     def record(cls, event):
+        """创建事件数据"""
         org_id = event.pop('org_id')
         user_id = event.pop('user_id', None)
         action = event.pop('action')
         object_type = event.pop('object_type')
         object_id = event.pop('object_id', None)
 
+        # 转UTC
         created_at = datetime.datetime.utcfromtimestamp(event.pop('timestamp'))
 
         event = cls(org_id=org_id, user_id=user_id, action=action,
@@ -1032,8 +1080,10 @@ class Event(db.Model):
 @generic_repr('id', 'created_by_id', 'org_id', 'active')
 class ApiKey(TimestampMixin, GFKBase, db.Model):
     id = Column(db.Integer, primary_key=True)
+    # 组织
     org_id = Column(db.Integer, db.ForeignKey("organizations.id"))
     org = db.relationship(Organization)
+
     # `lambda: generate_token(40)`: 返回一个匿名函数，每次调用该函数都会再调用 generate_token(40)
     api_key = Column(db.String(255), index=True, default=lambda: generate_token(40))
     active = Column(db.Boolean, default=True)
@@ -1069,8 +1119,10 @@ class ApiKey(TimestampMixin, GFKBase, db.Model):
 @generic_repr('id', 'name', 'type', 'user_id', 'org_id', 'created_at')
 class NotificationDestination(BelongsToOrgMixin, db.Model):
     id = Column(db.Integer, primary_key=True)
+    # 组织
     org_id = Column(db.Integer, db.ForeignKey("organizations.id"))
     org = db.relationship(Organization, backref="notification_destinations")
+
     user_id = Column(db.Integer, db.ForeignKey("users.id"))
     user = db.relationship(User, backref="notification_destinations")
     name = Column(db.String(255))
@@ -1173,6 +1225,7 @@ class AlertSubscription(TimestampMixin, db.Model):
 class QuerySnippet(TimestampMixin, db.Model, BelongsToOrgMixin):
     """查询片段"""
     id = Column(db.Integer, primary_key=True)
+    # 组织
     org_id = Column(db.Integer, db.ForeignKey("organizations.id"))
     org = db.relationship(Organization, backref="query_snippets")
     trigger = Column(db.String(255), unique=True)
@@ -1202,8 +1255,12 @@ class QuerySnippet(TimestampMixin, db.Model, BelongsToOrgMixin):
 
 
 def init_db():
+    """数据库初始化"""
+    # 默认组织
     default_org = Organization(name="Default", slug='default', settings={})
+    # 管理员组
     admin_group = Group(name='admin', permissions=['admin', 'super_admin'], org=default_org, type=Group.BUILTIN_GROUP)
+    # 默认组
     default_group = Group(name='default', permissions=Group.DEFAULT_PERMISSIONS, org=default_org, type=Group.BUILTIN_GROUP)
 
     db.session.add_all([default_org, admin_group, default_group])

@@ -30,6 +30,7 @@ class Organization(TimestampMixin, db.Model):
     settings = Column(MutableDict.as_mutable(PseudoJSON))
     # 用户组
     groups = db.relationship("Group", lazy="dynamic")
+    # 事件
     events = db.relationship("Event", lazy="dynamic", order_by="desc(Event.created_at)",)
 
     __tablename__ = 'organizations'
@@ -43,6 +44,7 @@ class Organization(TimestampMixin, db.Model):
 
     @property
     def default_group(self):
+        """默认组"""
         return self.groups.filter(Group.name == 'default', Group.type == Group.BUILTIN_GROUP).first()
 
     @property
@@ -85,6 +87,7 @@ class Organization(TimestampMixin, db.Model):
 
     @property
     def admin_group(self):
+        """管理员组"""
         return self.groups.filter(Group.name == 'admin', Group.type == Group.BUILTIN_GROUP).first()
 
     def has_user(self, email):

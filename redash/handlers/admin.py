@@ -26,6 +26,7 @@ def outdated_queries():
     else:
         outdated_queries = []
 
+    # 创建事件
     record_event(current_org, current_user._get_current_object(), {
         'action': 'list',
         'object_type': 'outdated_queries',

@@ -13,7 +13,7 @@ logger = get_task_logger(__name__)
 
 @celery.task(name="redash.tasks.record_event")
 def record_event(raw_event):
-    """事件"""
+    """创建事件任务"""
     event = models.Event.record(raw_event)
     models.db.session.commit()
 
@@ -39,7 +39,7 @@ def version_check():
 
 @celery.task(name="redash.tasks.subscribe")
 def subscribe(form):
-    """发布"""
+    """发布任务"""
     logger.info("Subscribing to: [security notifications=%s], [newsletter=%s]", form['security_notifications'], form['newsletter'])
     data = {
         'admin_name': form['name'],

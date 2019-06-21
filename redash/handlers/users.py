@@ -4,9 +4,11 @@ import time
 from flask import request
 from flask_restful import abort
 from flask_login import current_user, login_user
+# project: https://funcy.readthedocs.io/en/stable/colls.html?highlight=project#project
 from funcy import project
 from sqlalchemy.exc import IntegrityError
 from disposable_email_domains import blacklist
+# partial: https://funcy.readthedocs.io/en/stable/funcs.html#partial
 from funcy import partial
 
 from redash import models
@@ -221,6 +223,7 @@ class UserResource(BaseResource):
         require_permission_or_owner('list_users', user_id)
         user = get_object_or_404(models.User.get_by_id_and_org, user_id, self.current_org)
 
+        # 添加view事件
         self.record_event({
             'action': 'view',
             'object_id': user_id,
@@ -280,6 +283,7 @@ class UserResource(BaseResource):
 
             abort(400, message=message)
 
+        # 添加edit事件
         self.record_event({
             'action': 'edit',
             'object_id': user.id,

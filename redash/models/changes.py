@@ -11,10 +11,13 @@ class Change(GFKBase, db.Model):
     """修改历史记录？"""
     id = Column(db.Integer, primary_key=True)
     # 'object' defined in GFKBase
+    # 修改版本，统计修改次数
     object_version = Column(db.Integer, default=0)
+    # 用户
     user_id = Column(db.Integer, db.ForeignKey("users.id"))
     user = db.relationship("User", backref='changes')
     change = Column(PseudoJSON)
+    # 创建时间
     created_at = Column(db.DateTime(True), default=db.func.now())
 
     __tablename__ = 'changes'
@@ -39,6 +42,7 @@ class Change(GFKBase, db.Model):
 
     @classmethod
     def last_change(cls, obj):
+        """最后一次修改"""
         return cls.query.filter(
             cls.object_id == obj.id,
             cls.object_type == obj.__class__.__tablename__
@@ -73,6 +77,7 @@ class ChangeTrackingMixin(object):
         super(ChangeTrackingMixin, self).__setattr__(key, value)
 
     def record_changes(self, changed_by):
+        """创建修改记录"""
         db.session.add(self)
         db.session.flush()
         changes = {}

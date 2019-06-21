@@ -1,3 +1,4 @@
+# coding=utf-8
 from flask import request
 from geoip import geolite2
 from user_agents import parse as parse_ua
@@ -7,6 +8,7 @@ from redash.permissions import require_admin
 
 
 def get_location(ip):
+    """根据ip获取城市"""
     if ip is None:
         return "Unknown"
 
@@ -18,11 +20,14 @@ def get_location(ip):
 
 
 def event_details(event):
+    """获取事件的详情"""
     details = {}
     if event.object_type == 'data_source' and event.action == 'execute_query':
+        # 数据源对象
         details['query'] = event.additional_properties['query']
         details['data_source'] = event.object_id
     elif event.object_type == 'page' and event.action =='view':
+        # 分页对象
         details['page'] = event.object_id
     else:
         details['object_id'] = event.object_id
@@ -32,6 +37,7 @@ def event_details(event):
 
 
 def serialize_event(event):
+    """事件序列化"""
     d = {
         'org_id': event.org_id,
         'user_id': event.user_id,
@@ -55,6 +61,8 @@ def serialize_event(event):
 
 
 class EventsResource(BaseResource):
+    """事件资源"""
+
     def post(self):
         events_list = request.get_json(force=True)
         for event in events_list:

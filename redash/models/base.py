@@ -17,6 +17,7 @@ class RedashSQLAlchemy(SQLAlchemy):
 
     def apply_pool_defaults(self, app, options):
         super(RedashSQLAlchemy, self).apply_pool_defaults(app, options)
+        # 从settings获取配置
         if settings.SQLALCHEMY_DISABLE_POOL:
             options['poolclass'] = NullPool
             # Remove options NullPool does not support:
