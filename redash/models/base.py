@@ -47,7 +47,7 @@ class SearchBaseQuery(BaseQuery, SearchQueryMixin):
 def integer_vectorizer(column):
     return db.func.cast(column, db.Text)
 
-
+# Column默认不能为NULL
 Column = functools.partial(db.Column, nullable=False)
 
 # AccessPermission and Change use a 'generic foreign key' approach to refer to

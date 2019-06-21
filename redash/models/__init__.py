@@ -264,6 +264,7 @@ class QueryResult(db.Model, BelongsToOrgMixin):
 
     query_hash = Column(db.String(32), index=True)
     query_text = Column('query', db.Text)
+    # 查询结果数据
     data = Column(db.Text)
 
     # 执行时间

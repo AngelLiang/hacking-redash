@@ -304,17 +304,20 @@ class QueryResultResource(BaseResource):
             abort(404, message='No cached result found for this query.')
 
     def make_json_response(self, query_result):
+        """创建 JSON 响应"""
         data = json_dumps({'query_result': query_result.to_dict()})
         headers = {'Content-Type': "application/json"}
         return make_response(data, 200, headers)
 
     @staticmethod
     def make_csv_response(query_result):
+        """创建 CSV 响应"""
         headers = {'Content-Type': "text/csv; charset=UTF-8"}
         return make_response(query_result.make_csv_content(), 200, headers)
 
     @staticmethod
     def make_excel_response(query_result):
+        """创建 EXCEL 响应"""
         headers = {'Content-Type': "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}
         return make_response(query_result.make_excel_content(), 200, headers)
 
