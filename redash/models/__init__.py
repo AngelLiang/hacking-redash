@@ -24,6 +24,7 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import FernetEngine
 from redash import redis_connection, utils, settings
 from redash.destinations import (get_configuration_schema_for_destination_type,
                                  get_destination)
+# 导入 redash.metrics.database 模块，初始化相关
 from redash.metrics import database  # noqa: F401
 from redash.query_runner import (get_configuration_schema_for_query_runner_type,
                                  get_query_runner)
@@ -76,13 +77,17 @@ class DataSource(BelongsToOrgMixin, db.Model):
     org_id = Column(db.Integer, db.ForeignKey('organizations.id'))
     org = db.relationship(Organization, backref="data_sources")
 
+    # 数据库名称
     name = Column(db.String(255))
+    # 数据库类型，比如数据源是 postgreSQL ，则会存储 pg
     type = Column(db.String(255))
+    # 加密的options，用于数据库URL后面的的options配置？
     options = Column('encrypted_options', ConfigurationContainer.as_mutable(EncryptedConfiguration(db.Text, settings.SECRET_KEY, FernetEngine)))
     # 队列名称，默认是 queries
     queue_name = Column(db.String(255), default="queries")
     # 定时查询名称，默认是 scheduled_queries
     scheduled_queue_name = Column(db.String(255), default="scheduled_queries")
+    # 创建时间
     created_at = Column(db.DateTime(True), default=db.func.now())
 
     # 数据源组
@@ -95,6 +100,10 @@ class DataSource(BelongsToOrgMixin, db.Model):
         return self.id == other.id
 
     def to_dict(self, all=False, with_permissions_for=None):
+        """
+        :param all: bool, 全部字段
+        :param with_permissions_for: 附带权限数据
+        """
         d = {
             'id': self.id,
             'name': self.name,
@@ -133,6 +142,7 @@ class DataSource(BelongsToOrgMixin, db.Model):
 
     @classmethod
     def all(cls, org, group_ids=None):
+        # org过滤，id正排序
         data_sources = cls.query.filter(cls.org == org).order_by(cls.id.asc())
 
         if group_ids:

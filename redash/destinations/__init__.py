@@ -1,3 +1,5 @@
+# coding=utf-8
+"""通信目的端"""
 import logging
 
 logger = logging.getLogger(__name__)
@@ -32,9 +34,11 @@ class BaseDestination(object):
 
     @classmethod
     def configuration_schema(cls):
+        """配置表"""
         return {}
 
     def notify(self, alert, query, user, new_state, app, host, options):
+        """发布通知"""
         raise NotImplementedError()
 
     @classmethod

@@ -1,3 +1,4 @@
+# coding=utf-8
 import jsonschema
 from jsonschema import ValidationError
 from sqlalchemy.ext.mutable import Mutable

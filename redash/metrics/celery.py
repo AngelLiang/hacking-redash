@@ -1,3 +1,5 @@
+# coding=utf-8
+"""Celery指标模块"""
 from __future__ import absolute_import
 
 import logging
@@ -36,6 +38,9 @@ def task_postrun_handler(signal, sender, task_id, task, args, kwargs, retval, st
 
         state = (state or 'unknown').lower()
         tags = {'state': state, 'hostname': socket.gethostname()}
+
+        ############################################################
+        # 以下根据业务不同修改
         if task.name == 'redash.tasks.execute_query':
             if isinstance(retval, Exception):
                 tags['state'] = 'exception'
@@ -45,8 +50,13 @@ def task_postrun_handler(signal, sender, task_id, task, args, kwargs, retval, st
 
         normalized_task_name = task.name.replace('redash.tasks.', '').replace('.', '_')
         metric = "celery.task_runtime.{}".format(normalized_task_name)
+        ############################################################
+
         logging.debug("metric=%s", json_dumps({'metric': metric, 'tags': tags, 'value': run_time}))
+
+        # 如果不用到 statsd_client，需要删掉这两行
         statsd_client.timing(metric_name(metric, tags), run_time)
         statsd_client.incr(metric_name('celery.task.{}.{}'.format(normalized_task_name, state), tags))
+
     except Exception:
         logging.exception("Exception during task_postrun handler.")

@@ -1,3 +1,5 @@
+# coding=utf-8
+"""请求指标模块"""
 import logging
 import time
 from collections import namedtuple
@@ -10,14 +12,17 @@ metrics_logger = logging.getLogger("metrics")
 
 
 def record_requets_start_time():
+    """配置请求开始时间"""
     g.start_time = time.time()
 
 
 def calculate_metrics(response):
+    """计算指标"""
     if 'start_time' not in g:
         return response
 
-    request_duration = (time.time() - g.start_time) * 1000
+    request_duration = (time.time() - g.start_time) * 1000  # 请求用时，单位 ms
+    # 需要结合 .datebase 使用
     queries_duration = g.get('queries_duration', 0.0)
     queries_count = g.get('queries_count', 0.0)
     endpoint = (request.endpoint or 'unknown').replace('.', '_')
@@ -46,6 +51,7 @@ def calculate_metrics_on_exception(error):
 
 
 def provision_app(app):
+    """给Flask app注册指标模块"""
     app.before_request(record_requets_start_time)
     app.after_request(calculate_metrics)
     app.teardown_request(calculate_metrics_on_exception)

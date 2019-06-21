@@ -9,6 +9,7 @@ class Email(BaseDestination):
 
     @classmethod
     def configuration_schema(cls):
+        """配置表"""
         return {
             "type": "object",
             "properties": {
@@ -29,6 +30,16 @@ class Email(BaseDestination):
         return 'fa-envelope'
 
     def notify(self, alert, query, user, new_state, app, host, options):
+        """发布通知
+
+        :param alert:
+        :param query:
+        :param user:
+        :param new_state:
+        :param app:
+        :param host:
+        :param options:
+        """
         recipients = [email for email in options.get('addresses', '').split(',') if email]
 
         if not recipients:

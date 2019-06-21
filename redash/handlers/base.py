@@ -81,6 +81,7 @@ def record_event(org, user, options):
 
 
 def require_fields(req, fields):
+    """必传字段，可考虑用集合实现或调用funcy的方法"""
     for f in fields:
         if f not in req:
             abort(400)

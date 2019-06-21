@@ -1,3 +1,4 @@
+# coding=utf-8
 import logging
 import requests
 from flask import redirect, url_for, Blueprint, flash, request, session
@@ -42,11 +43,12 @@ def get_user_profile(access_token):
 
 
 def verify_profile(org, profile):
+    """验证个人信息"""
     if org.is_public:
         return True
 
     email = profile['email']
-    domain = email.split('@')[-1]
+    domain = email.split('@')[-1]  # 获取邮箱域名
 
     if domain in org.google_apps_domains:
         return True

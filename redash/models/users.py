@@ -141,8 +141,12 @@ class User(TimestampMixin, db.Model, BelongsToOrgMixin, UserMixin, PermissionsCh
         self.api_key = generate_token(40)
 
     def to_dict(self, with_api_key=False):
+        """
+        :param with_api_key: bool
+        """
         profile_image_url = self.profile_image_url
         if self.is_disabled:
+            # 如果被禁用则换头像
             assets = app.extensions['webpack']['assets'] or {}
             path = 'images/avatar.svg'
             profile_image_url = url_for('static', filename=assets.get(path, path))
@@ -191,24 +195,44 @@ class User(TimestampMixin, db.Model, BelongsToOrgMixin, UserMixin, PermissionsCh
 
     @classmethod
     def get_by_org(cls, org):
+        """ filter org
+
+        :param org:
+        """
         return cls.query.filter(cls.org == org)
 
     @classmethod
     def get_by_email_and_org(cls, email, org):
+        """ filter org and email
+
+        :param email:
+        :param org:
+        """
         return cls.get_by_org(org).filter(cls.email == email).one()
 
     @classmethod
     def get_by_api_key_and_org(cls, api_key, org):
+        """ filter org and api_key
+
+        :param api_key:
+        :param org:
+        """
         return cls.get_by_org(org).filter(cls.api_key == api_key).one()
 
     @classmethod
     def all(cls, org):
-        """所有启用用户"""
+        """所有启用用户
+
+        :param org:
+        """
         return cls.get_by_org(org).filter(cls.disabled_at.is_(None))
 
     @classmethod
     def all_disabled(cls, org):
-        """所有禁用用户"""
+        """所有禁用用户
+
+        :param org:
+        """
         return cls.get_by_org(org).filter(cls.disabled_at.isnot(None))
 
     @classmethod
@@ -239,6 +263,10 @@ class User(TimestampMixin, db.Model, BelongsToOrgMixin, UserMixin, PermissionsCh
 
     @classmethod
     def find_by_email(cls, email):
+        """filter email
+
+        :param email:
+        """
         return cls.query.filter(cls.email == email)
 
     def hash_password(self, password):
