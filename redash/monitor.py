@@ -1,4 +1,6 @@
 # coding=utf-8
+"""监控模块"""
+
 import ast
 import itertools
 import json
@@ -50,6 +52,7 @@ def get_queues_status():
 
 def get_db_sizes():
     """获取数据库容量"""
+    # 数据库指标
     database_metrics = []
     queries = [
         ['Query Results Size', "select pg_total_relation_size('query_results') as size from (select 1) as a"],
