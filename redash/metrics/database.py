@@ -1,5 +1,5 @@
 # coding=utf-8
-"""数据库度量模块"""
+"""数据库指标模块"""
 import logging
 import time
 

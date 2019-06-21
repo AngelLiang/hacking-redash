@@ -1,5 +1,5 @@
 # coding=utf-8
-"""请求度量模块"""
+"""请求指标模块"""
 import logging
 import time
 from collections import namedtuple
@@ -17,7 +17,7 @@ def record_requets_start_time():
 
 
 def calculate_metrics(response):
-    """计算度量"""
+    """计算指标"""
     if 'start_time' not in g:
         return response
 
@@ -51,7 +51,7 @@ def calculate_metrics_on_exception(error):
 
 
 def provision_app(app):
-    """给Flask app注册度量模块"""
+    """给Flask app注册指标模块"""
     app.before_request(record_requets_start_time)
     app.after_request(calculate_metrics)
     app.teardown_request(calculate_metrics_on_exception)
