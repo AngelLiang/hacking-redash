@@ -14,7 +14,7 @@ from redash.metrics import celery as celery_metrics
 celery = Celery('redash',
                 broker=settings.CELERY_BROKER,
                 include='redash.tasks')
-
+# 定时任务
 celery_schedule = {
     'refresh_queries': {
         'task': 'redash.tasks.refresh_queries',
@@ -26,7 +26,7 @@ celery_schedule = {
     },
     'sync_user_details': {
         'task': 'redash.tasks.sync_user_details',
-        'schedule': timedelta(minutes=1),
+        'schedule': timedelta(minutes=1),  # 一分钟执行一次
     }
 }
 

@@ -235,6 +235,7 @@ def cleanup_query_results():
 
 @celery.task(name="redash.tasks.refresh_schema", time_limit=90, soft_time_limit=60)
 def refresh_schema(data_source_id):
+    """刷新单个数据源的数据表"""
     ds = models.DataSource.get_by_id(data_source_id)
     logger.info(u"task=refresh_schema state=start ds_id=%s", ds.id)
     start_time = time.time()
@@ -255,6 +256,8 @@ def refresh_schema(data_source_id):
 def refresh_schemas():
     """
     Refreshes the data sources schemas.
+
+    刷新多个数据源的数据表
     """
     blacklist = [int(ds_id) for ds_id in redis_connection.smembers('data_sources:schema:blacklist') if ds_id]
     global_start_time = time.time()
@@ -262,11 +265,11 @@ def refresh_schemas():
     logger.info(u"task=refresh_schemas state=start")
 
     for ds in models.DataSource.query:
-        if ds.paused:
+        if ds.paused:  # 数据源被暂停
             logger.info(u"task=refresh_schema state=skip ds_id=%s reason=paused(%s)", ds.id, ds.pause_reason)
-        elif ds.id in blacklist:
+        elif ds.id in blacklist:  # 数据源被放进黑名单
             logger.info(u"task=refresh_schema state=skip ds_id=%s reason=blacklist", ds.id)
-        elif ds.org.is_disabled:
+        elif ds.org.is_disabled:  # 数据源的组织被禁用
             logger.info(u"task=refresh_schema state=skip ds_id=%s reason=org_disabled", ds.id)
         else:
             refresh_schema.apply_async(args=(ds.id,), queue=settings.SCHEMAS_REFRESH_QUEUE)

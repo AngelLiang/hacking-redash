@@ -35,6 +35,8 @@ def sync_last_active_at():
     all the user_ids to update, and then fetch the timestamp to minimize the
     time between fetching the value and updating the DB. This is because there
     might be a more recent update we skip otherwise.
+
+    异步更新用户活动时间
     """
     user_ids = redis_connection.hkeys(LAST_ACTIVE_KEY)
     for user_id in user_ids:
@@ -42,7 +44,7 @@ def sync_last_active_at():
         active_at = dt_from_timestamp(timestamp)
         user = User.query.filter(User.id == user_id).first()
         if user:
-            user.active_at = active_at
+            user.active_at = active_at  # 更新活动时间
         redis_connection.hdel(LAST_ACTIVE_KEY, user_id)
     db.session.commit()
 
@@ -53,6 +55,7 @@ def update_user_active_at(sender, *args, **kwargs):
     the current user's details to Redis
     """
     if current_user.is_authenticated and not current_user.is_api_user():
+        # 放到redis里面
         redis_connection.hset(LAST_ACTIVE_KEY, current_user.id, int(time.time()))
 
 
@@ -102,7 +105,7 @@ class User(TimestampMixin, db.Model, BelongsToOrgMixin, UserMixin, PermissionsCh
     # 详情，使用了 postgresql.JSON 类型
     details = Column(MutableDict.as_mutable(postgresql.JSON), nullable=True,
                      server_default='{}', default={})
-    # 激活时间，存放在了 details 字段里
+    # 用户最后活动时间，存放在了 details 字段里
     active_at = json_cast_property(db.DateTime(True), 'details', 'active_at',
                                    default=None)
     # 是否正在邀请等待
@@ -221,7 +224,7 @@ class User(TimestampMixin, db.Model, BelongsToOrgMixin, UserMixin, PermissionsCh
 
     @classmethod
     def all(cls, org):
-        """所有启用用户
+        """获取所有启用用户
 
         :param org:
         """
@@ -229,7 +232,7 @@ class User(TimestampMixin, db.Model, BelongsToOrgMixin, UserMixin, PermissionsCh
 
     @classmethod
     def all_disabled(cls, org):
-        """所有禁用用户
+        """获取所有禁用用户
 
         :param org:
         """

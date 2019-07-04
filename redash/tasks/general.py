@@ -53,6 +53,7 @@ def subscribe(form):
 
 @celery.task(name="redash.tasks.send_mail")
 def send_mail(to, subject, html, text):
+    """发送邮件"""
     try:
         message = Message(recipients=to,
                           subject=subject,
@@ -66,7 +67,7 @@ def send_mail(to, subject, html, text):
 
 @celery.task(
     name="redash.tasks.sync_user_details",
-    ignore_result=True,
+    ignore_result=True,  # 忽略任务返回的结果
     soft_time_limit=60,
     time_limit=120,
     # let the task expire after 45 seconds since there will be
