@@ -441,7 +441,7 @@ class Query(ChangeTrackingMixin, TimestampMixin, BelongsToOrgMixin, db.Model):
     name = Column(db.String(255))
     description = Column(db.String(4096), nullable=True)
     query_text = Column("query", db.Text)
-    query_hash = Column(db.String(32))
+    query_hash = Column(db.String(32))  # 设置 query_text 后，SQLAlchemy会自动计算
     api_key = Column(db.String(40), default=lambda: generate_token(40))
     # 用户
     user_id = Column(db.Integer, db.ForeignKey("users.id"))
@@ -479,6 +479,7 @@ class Query(ChangeTrackingMixin, TimestampMixin, BelongsToOrgMixin, db.Model):
         return text_type(self.id)
 
     def archive(self, user=None):
+        """归档"""
         db.session.add(self)
         self.is_archived = True
         self.schedule = None
@@ -505,6 +506,13 @@ class Query(ChangeTrackingMixin, TimestampMixin, BelongsToOrgMixin, db.Model):
 
     @classmethod
     def all_queries(cls, group_ids, user_id=None, include_drafts=False, include_archived=False):
+        """
+        :param group_ids:
+        :param user_id:
+        :param include_drafts:
+        :pararm include_archived:
+        """
+        # 获取所有符合条件的 query_id
         query_ids = (
             db.session
             .query(distinct(cls.id))
@@ -538,6 +546,7 @@ class Query(ChangeTrackingMixin, TimestampMixin, BelongsToOrgMixin, db.Model):
                 contains_eager(Query.user),
                 contains_eager(Query.latest_query_data),
             )
+            # 按创建时间排序
             .order_by(Query.created_at.desc())
         )
 
@@ -665,7 +674,7 @@ class Query(ChangeTrackingMixin, TimestampMixin, BelongsToOrgMixin, db.Model):
 
     @classmethod
     def get_by_id(cls, _id):
-        return cls.query.filter(cls.id == _id).one()
+        return cls.query.filter(cls.id == _id).one()  # filter()过滤后，使用one()有且只有一条记录
 
     def fork(self, user):
         forked_list = ['org', 'data_source', 'latest_query_data', 'description',
@@ -716,8 +725,9 @@ class Query(ChangeTrackingMixin, TimestampMixin, BelongsToOrgMixin, db.Model):
 
 @listens_for(Query.query_text, 'set')
 def gen_query_hash(target, val, oldval, initiator):
+    """Query.query_text被设置后，自动计算Query.query_hash"""
     target.query_hash = utils.gen_query_hash(val)
-    target.schedule_failures = 0
+    target.schedule_failures = 0  # 定时调用失败次数归零
 
 
 @listens_for(Query.user_id, 'set')
@@ -772,11 +782,16 @@ class Alert(TimestampMixin, BelongsToOrgMixin, db.Model):
     name = Column(db.String(255))
     query_id = Column(db.Integer, db.ForeignKey("queries.id"))
     query_rel = db.relationship(Query, backref=backref('alerts', cascade="all"))
+    # 用户
     user_id = Column(db.Integer, db.ForeignKey("users.id"))
     user = db.relationship(User, backref='alerts')
+
     options = Column(MutableDict.as_mutable(PseudoJSON))
+
+    # 状态
     state = Column(db.String(255), default=UNKNOWN_STATE)
     subscriptions = db.relationship("AlertSubscription", cascade="all, delete-orphan")
+    # 最后一次触发时间
     last_triggered_at = Column(db.DateTime(True), nullable=True)
     rearm = Column(db.Integer, nullable=True)
 
@@ -1125,15 +1140,19 @@ class ApiKey(TimestampMixin, GFKBase, db.Model):
 @python_2_unicode_compatible
 @generic_repr('id', 'name', 'type', 'user_id', 'org_id', 'created_at')
 class NotificationDestination(BelongsToOrgMixin, db.Model):
+    """通知发布目的地"""
     id = Column(db.Integer, primary_key=True)
     # 组织
     org_id = Column(db.Integer, db.ForeignKey("organizations.id"))
     org = db.relationship(Organization, backref="notification_destinations")
 
+    # 关联的用户
     user_id = Column(db.Integer, db.ForeignKey("users.id"))
     user = db.relationship(User, backref="notification_destinations")
-    name = Column(db.String(255))
-    type = Column(db.String(255))
+
+    name = Column(db.String(255))  # 名称
+    type = Column(db.String(255))  # 类型
+    # 配置选项
     options = Column(ConfigurationContainer.as_mutable(Configuration))
     created_at = Column(db.DateTime(True), default=db.func.now())
 
@@ -1184,6 +1203,8 @@ class AlertSubscription(TimestampMixin, db.Model):
     id = Column(db.Integer, primary_key=True)
     user_id = Column(db.Integer, db.ForeignKey("users.id"))
     user = db.relationship(User)
+
+    # 目的地id
     destination_id = Column(db.Integer,
                             db.ForeignKey("notification_destinations.id"),
                             nullable=True)
