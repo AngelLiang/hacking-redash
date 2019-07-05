@@ -843,11 +843,7 @@ def generate_slug(ctx):
 @gfk_type
 @generic_repr('id', 'name', 'slug', 'user_id', 'org_id', 'version', 'is_archived', 'is_draft')
 class Dashboard(ChangeTrackingMixin, TimestampMixin, BelongsToOrgMixin, db.Model):
-    """主控板"""
-<<<<<<< HEAD
-=======
-
->>>>>>> f44e9a28bfda0ecba2d08f67fe69f7a326bb9a53
+    """控制板"""
     id = Column(db.Integer, primary_key=True)
     version = Column(db.Integer)
     # 组织
